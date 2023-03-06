@@ -33,14 +33,15 @@ in MagicMirror/config/config.js
     updateInterval: 60 * 60 * 1000,
     retryDelay: 10 * 60 * 1000,
     settings: {
-      apiEndpoints: [
-        { name: "stores", enabled: true },
-        { name: "minbonus", enabled: true },
-        { name: "offers", enabled: true, storeId: "11111" }
-      ]
+      apiEndpoints: {
+        stores: true, // get stores and store ID, enable this just to list ID of your favorite stores for the offerstoreid
+        minbonus: true, // show ICA bonus
+        showoffer: true,
+        offerstoreid: "13418" // Use store ID configuration option to show offers from specific store.
+      }
     }
   }
-}
+},
 
 ```
 
