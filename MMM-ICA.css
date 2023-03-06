@@ -1,0 +1,20 @@
+.MMM-ICA {
+  display: inline-block;
+  font-size: 12px;
+  text-align: right;
+}
+
+.MMM-ICA .status {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.MMM-ICA .auth-ticket {
+  margin-bottom: 4px;
+}
+
+.MMM-ICA .error {
+  color: red;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
