@@ -2,7 +2,6 @@ const NodeHelper = require("node_helper");
 const request = require("request");
 
 module.exports = NodeHelper.create({
-
   start: function() {
     console.log(`Starting helper: ${this.name}`);
   },
@@ -105,66 +104,83 @@ module.exports = NodeHelper.create({
       this.getOffers();
     }, this.config.updateInterval);
   },
+  },
+
+startRequests: function() {
+// Schedule the first call to the card accounts API.
+setTimeout(() => {
+this.getCardAccounts();
+}, this.config.updateInterval);
+  // Schedule the first call to the stores API.
+setTimeout(() => {
+  this.getStores();
+}, this.config.updateInterval);
+
+// Schedule the first call to the minbonus transactions API.
+setTimeout(() => {
+  this.getMinBonusTransactions();
+}, this.config.updateInterval);
+
+// Schedule the first call to the offers API.
+setTimeout(() => {
+  this.getOffers();
+}, this.config.updateInterval);
+},
 
 getCardAccounts: function() {
-    console.log("Retrieving card accounts");
-
-    const options = {
-      method: "GET",
-      url: `${this.config.apiUrl}/user/cardaccounts`,
-      headers: {
-        "AuthenticationTicket": this.authTicket
-      }
-    };
-
-    this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
-  },
-
-  getStores: function() {
-    console.log("Retrieving stores");
-
-    const options = {
-      method: "GET",
-      url: `${this.config.storeApiUrl}/user/stores`,
-      headers: {
-        "AuthenticationTicket": this.authTicket
-      }
-    };
-
-    this.sendSocketNotification("GET_STORES", options);
-  },
-
-  getMinBonus: function() {
-    console.log("Retrieving min bonus");
-
-    const options = {
-      method: "GET",
-      url: `${this.config.apiUrl}/user/minbonustransaction`,
-      headers: {
-        "AuthenticationTicket": this.authTicket
-      }
-    };
-
-    this.sendSocketNotification("GET_MIN_BONUS", options);
-  },
-
-  getOffers: function() {
-    console.log("Retrieving offers");
-
-    let url = `${this.config.apiUrl}/offers`;
-    if (this.config.settings.apiEndpoints.offers.storeId) {
-      url += `?Stores=${this.config.settings.apiEndpoints.offers.storeId}`;
-    }
-
-    const options = {
-      method: "GET",
-      url: url,
-      headers: {
-        "AuthenticationTicket": this.authTicket
-      }
-    };
-
-    this.sendSocketNotification("GET_OFFERS", options);
+console.log("Retrieving card accounts");
+  const options = {
+  method: "GET",
+  url: `${this.config.apiUrl}/user/cardaccounts`,
+  headers: {
+    "AuthenticationTicket": this.authTicket
   }
-});
+};
 
+this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
+},
+
+getStores: function() {
+console.log("Retrieving stores");
+  const options = {
+  method: "GET",
+  url: `${this.config.storeApiUrl}/user/stores`,
+  headers: {
+    "AuthenticationTicket": this.authTicket
+  }
+};
+
+this.sendSocketNotification("GET_STORES", options);
+},
+
+getMinBonus: function() {
+console.log("Retrieving min bonus");
+  const options = {
+  method: "GET",
+  url: `${this.config.apiUrl}/user/minbonustransaction`,
+  headers: {
+    "AuthenticationTicket": this.authTicket
+  }
+};
+
+this.sendSocketNotification("GET_MIN_BONUS", options);
+},
+
+getOffers: function() {
+console.log("Retrieving offers");
+  let url = `${this.config.apiUrl}/offers`;
+if (this.config.settings.apiEndpoints.offers.storeId) {
+  url += `?Stores=${this.config.settings.apiEndpoints.offers.storeId}`;
+}
+
+const options = {
+  method: "GET",
+  url: url,
+  headers: {
+    "AuthenticationTicket": this.authTicket
+  }
+};
+
+this.sendSocketNotification("GET_OFFERS", options);
+}
+});
