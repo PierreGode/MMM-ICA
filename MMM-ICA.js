@@ -28,7 +28,7 @@ getDom: function() {
     if (this.cardAccounts) {
       wrapper.innerHTML = `Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Balance}`;
     } else {
-      wrapper.innerHTML = "Waiting for card accounts...";
+      wrapper.innerHTML = "Loading content...";
     }
 
     return wrapper;
