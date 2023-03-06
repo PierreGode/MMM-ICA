@@ -28,7 +28,6 @@ Module.register("MMM-ICA", {
 
     this.sendSocketNotification("GET_AUTH_TICKET", this.config);
   },
-
   getDom: function() {
     const wrapper = document.createElement("div");
     wrapper.className = "small bright";
@@ -42,7 +41,6 @@ Module.register("MMM-ICA", {
     return wrapper;
   },
 
-  // Override socket notification handler.
   socketNotificationReceived: function(notification, payload) {
     console.log("Received socket notification:", notification, "with payload:", payload);
 
@@ -71,7 +69,6 @@ Module.register("MMM-ICA", {
       console.log(`Got authentication ticket: ${authTicket}`);
       this.authTicket = authTicket;
       this.updateDom();
-
       // Schedule the first call to the card accounts API.
       setTimeout(() => {
         this.getCardAccounts();
@@ -114,7 +111,6 @@ Module.register("MMM-ICA", {
       console.log(`Got stores: ${JSON.stringify(stores)}`);
       this.stores = stores;
       this.updateDom();
-
       // Schedule the next call to the stores API.
       setTimeout(() => {
         this.getStores();
@@ -221,10 +217,14 @@ Module.register("MMM-ICA", {
   getOffers: function() {
     console.log("Retrieving offers");
 
-    const storeId = this.config.settings.apiEndpoints.find(e => e.name === "offers")?.storeId;
+    let url = `${this.config.apiUrl}/offers`;
+    if (this.config.settings.apiEndpoints.offers.storeId) {
+      url += `?Stores=${this.config.settings.apiEndpoints.offers.storeId}`;
+    }
+
     const options = {
       method: "GET",
-      url: `${this.config.apiUrl}/offers?Stores=${storeId}`,
+      url: url,
       headers: {
         "AuthenticationTicket": this.authTicket
       }
@@ -232,4 +232,4 @@ Module.register("MMM-ICA", {
 
     this.sendSocketNotification("GET_OFFERS", options);
   }
-});
+}); 
