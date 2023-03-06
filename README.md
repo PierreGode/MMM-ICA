@@ -1,11 +1,15 @@
 #MMM-ICA is a Magic Mirror module for connecting to the ICA API.
 
-THIS JUST STARTED AND IS MISSING 99% OF FUNCTIONS
-Ittiration 1: shows balance
 
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/J3J2EARPK)
 
+
+
+
+
+THIS JUST STARTED AND IS MISSING 99% OF FUNCTIONS
+Ittiration 1: shows balance
 
 ![saldo](https://user-images.githubusercontent.com/8579922/223160998-5eef3106-1b55-4f2e-a614-35ed100a9227.png)
 
