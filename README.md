@@ -17,9 +17,9 @@ cd MagicMirror/modules
 git clone https://github.com/PierreGode/MMM-ICA.git
 
 ```
-in MagicMirror/config/config.js Add
+in MagicMirror/config/config.js
 
-Add your username and password for Ica
+
 
 ```
 {
@@ -27,14 +27,18 @@ Add your username and password for Ica
   position: "bottom_right",
   header: "ICA",
   config: {
-    username: "",
-    password: "",
+    username: "",  //Add your username for Ica
+    password: "",  //Add your password for Ica
     apiUrl: "https://handla.api.ica.se/api/",
     updateInterval: 60 * 60 * 1000, // Update every hour.
     retryDelay: 10 * 60 * 1000 // Retry every 10 minutes if an error occurs.
   }
 },
 ```
+
+
+
+
 API reference
 For more information on the ICA API, see the ica-api repository. https://github.com/svendahlstrand/ica-api 
 
