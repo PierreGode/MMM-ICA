@@ -2,6 +2,7 @@ const NodeHelper = require("node_helper");
 const request = require("request");
 
 module.exports = NodeHelper.create({
+
   start: function() {
     console.log(`Starting helper: ${this.name}`);
   },
@@ -11,22 +12,10 @@ module.exports = NodeHelper.create({
 
     if (notification === "GET_AUTH_TICKET") {
       this.config = payload;
-      console.log("Retrieving authentication ticket");
-
-      const authHeader = `Basic ${Buffer.from(`${payload.username}:${payload.password}`).toString("base64")}`;
-      const options = {
-        method: "GET",
-        url: `${payload.apiUrl}/login`,
-        headers: {
-          "Authorization": authHeader
-        }
-      };
-
-      this.makeRequest(options);
+      this.getAuthTicket();
     } else if (notification === "GET_CARD_ACCOUNTS") {
       const options = payload;
       options.headers["AuthenticationTicket"] = this.authTicket;
-
       this.makeRequest(options, "CARD_ACCOUNTS_RESULT");
     } else if (notification === "GET_STORES") {
       const options = {
@@ -36,7 +25,6 @@ module.exports = NodeHelper.create({
           "AuthenticationTicket": this.authTicket
         }
       };
-
       this.makeRequest(options, "STORES_RESULT");
     } else if (notification === "GET_MINBONUS_TRANSACTIONS") {
       const options = {
@@ -46,23 +34,14 @@ module.exports = NodeHelper.create({
           "AuthenticationTicket": this.authTicket
         }
       };
-
       this.makeRequest(options, "MINBONUS_TRANSACTIONS_RESULT");
     } else if (notification === "GET_OFFERS") {
-      const options = {
-        method: "GET",
-        url: `${this.config.apiUrl}/offers?Stores=${payload.storeId}`,
-        headers: {
-          "AuthenticationTicket": this.authTicket
-        }
-      };
-
-      this.makeRequest(options, "OFFERS_RESULT");
+      this.getOffers();
     }
   },
 
   makeRequest: function(options, resultNotification) {
-    var self = this;
+    const self = this;
     request(options, function(error, response, body) {
       if (!error && response.statusCode === 200) {
         const result = JSON.parse(body);
@@ -87,7 +66,22 @@ module.exports = NodeHelper.create({
       }
     };
 
-    this.makeRequest(options, "AUTH_TICKET_RESULT");
+    const self = this;
+    request(options, function(error, response, body) {
+      if (!error && response.statusCode === 200) {
+        const result = JSON.parse(body);
+        const authTicket = result.AuthenticationTicket;
+        console.log(`Got authentication ticket: ${authTicket}`);
+        self.authTicket = authTicket;
+        self.startRequests();
+      } else {
+        console.error(`Error getting authentication ticket: ${error}`);
+        self.authTicket = "";
+        setTimeout(() => {
+          self.getAuthTicket();
+        }, self.config.retryDelay);
+      }
+    });
   },
 
   startRequests: function() {
@@ -112,47 +106,65 @@ module.exports = NodeHelper.create({
     }, this.config.updateInterval);
   },
 
-           .filter(o => o.CategoryName === "Matvaror")
-          .slice(0, this.config.offerLimit)
-          .map(o => ({
-            name: o.Name,
-            price: o.Price,
-            priceBeforeDiscount: o.OriginalPrice,
-            discount: o.SavingsText,
-            imageUrl: o.ImageUrl
-          }));
-        console.log(`Got offers: ${JSON.stringify(offers)}`);
-        this.offers = offers;
-        this.updateDom();
+getCardAccounts: function() {
+    console.log("Retrieving card accounts");
 
-        // Schedule the next call to the offers API.
-        setTimeout(() => {
-          this.getOffers();
-        }, this.config.updateInterval);
-      } else {
-        console.error(`Error getting offers: ${payload.error}`);
-        setTimeout(() => {
-          this.getOffers();
-        }, this.config.retryDelay);
+    const options = {
+      method: "GET",
+      url: `${this.config.apiUrl}/user/cardaccounts`,
+      headers: {
+        "AuthenticationTicket": this.authTicket
       }
-    },
+    };
 
-    getOffers: function() {
-      console.log("Retrieving offers");
+    this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
+  },
 
-      let url = `${this.config.apiUrl}/offers`;
-      if (this.config.settings.apiEndpoints.offers.storeId) {
-        url += `?Stores=${this.config.settings.apiEndpoints.offers.storeId}`;
+  getStores: function() {
+    console.log("Retrieving stores");
+
+    const options = {
+      method: "GET",
+      url: `${this.config.storeApiUrl}/user/stores`,
+      headers: {
+        "AuthenticationTicket": this.authTicket
       }
+    };
 
-      const options = {
-        method: "GET",
-        url: url,
-        headers: {
-          "AuthenticationTicket": this.authTicket
-        }
-      };
+    this.sendSocketNotification("GET_STORES", options);
+  },
 
-      this.sendSocketNotification("GET_OFFERS", options);
+  getMinBonus: function() {
+    console.log("Retrieving min bonus");
+
+    const options = {
+      method: "GET",
+      url: `${this.config.apiUrl}/user/minbonustransaction`,
+      headers: {
+        "AuthenticationTicket": this.authTicket
+      }
+    };
+
+    this.sendSocketNotification("GET_MIN_BONUS", options);
+  },
+
+  getOffers: function() {
+    console.log("Retrieving offers");
+
+    let url = `${this.config.apiUrl}/offers`;
+    if (this.config.settings.apiEndpoints.offers.storeId) {
+      url += `?Stores=${this.config.settings.apiEndpoints.offers.storeId}`;
     }
-  });
+
+    const options = {
+      method: "GET",
+      url: url,
+      headers: {
+        "AuthenticationTicket": this.authTicket
+      }
+    };
+
+    this.sendSocketNotification("GET_OFFERS", options);
+  }
+});
+
