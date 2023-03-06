@@ -1,5 +1,4 @@
-#MMM-ICA
-This is a Magic Mirror module for connecting to the ICA API.
+#MMM-ICA is a Magic Mirror module for connecting to the ICA API.
 
 THIS JUST STARTED AND IS MISSING 99% OF FUNCTIONS
 Ittiration 1: shows balance
