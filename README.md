@@ -26,13 +26,22 @@ in MagicMirror/config/config.js
   position: "bottom_right",
   header: "ICA",
   config: {
-    username: "",  //Add your username for Ica
-    password: "",  //Add your password for Ica
+    username: "",
+    password: "",
     apiUrl: "https://handla.api.ica.se/api/",
-    updateInterval: 60 * 60 * 1000, // Update every hour.
-    retryDelay: 10 * 60 * 1000 // Retry every 10 minutes if an error occurs.
+    storeApiUrl: "https://handla.api.ica.se/api/",
+    updateInterval: 60 * 60 * 1000,
+    retryDelay: 10 * 60 * 1000,
+    settings: {
+      apiEndpoints: [
+        { name: "stores", enabled: true },
+        { name: "minbonus", enabled: true },
+        { name: "offers", enabled: true, storeId: "11111" }
+      ]
+    }
   }
-},
+}
+
 ```
 
 
