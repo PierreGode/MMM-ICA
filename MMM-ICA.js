@@ -42,7 +42,6 @@ Module.register("MMM-ICA", {
 
     return wrapper;
   },
-
   // Override socket notification handler.
   socketNotificationReceived: function(notification, payload) {
     console.log("Received socket notification:", notification, "with payload:", payload);
@@ -107,10 +106,8 @@ Module.register("MMM-ICA", {
       console.warn(`Unknown socket notification received: ${notification}`);
     }
   },
-
   getCardAccounts: function() {
-    console
-console.log("Retrieving card accounts");
+    console.log("Retrieving card accounts");
 
     const options = {
       method: "GET",
