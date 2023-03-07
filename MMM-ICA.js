@@ -1,10 +1,14 @@
+// MMM-ICA.js
 Module.register("MMM-ICA", {
   defaults: {
     username: "",
     password: "",
     apiUrl: "",
     updateInterval: 60 * 60 * 1000, // Update every hour.
-    retryDelay: 5 * 60 * 1000 // Retry every 5 minutes if an error occurs.
+    retryDelay: 5 * 60 * 1000, // Retry every 5 minutes if an error occurs.
+    showStores: false, // Enable/disable display of stores.
+    showCardAccounts: true, // Enable/disable display of card accounts.
+    maxStores: 10 // Maximum number of stores to display.
   },
 
   start: function() {
@@ -21,14 +25,23 @@ Module.register("MMM-ICA", {
     this.sendSocketNotification("GET_AUTH_TICKET", this.config);
   },
 
-getDom: function() {
+  getDom: function() {
     const wrapper = document.createElement("div");
     wrapper.className = "small bright";
 
-    if (this.cardAccounts) {
+    if (this.config.showCardAccounts && this.cardAccounts) {
       wrapper.innerHTML = `Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Balance}`;
+    } else if (this.config.showStores && this.stores) {
+      wrapper.innerHTML = "Butiker: ";
+      const stores = this.stores.Stores.slice(0, this.config.maxStores);
+      for (const store of stores) {
+        wrapper.innerHTML += `${store.Name} (${store.Address})`;
+        if (stores.indexOf(store) < stores.length - 1) {
+          wrapper.innerHTML += ", ";
+        }
+      }
     } else {
-      wrapper.innerHTML = "Waiting for card accounts...";
+      wrapper.innerHTML = "Waiting for data...";
     }
 
     return wrapper;
@@ -64,15 +77,41 @@ getDom: function() {
       this.authTicket = authTicket;
       this.updateDom();
 
-      // Schedule the first call to the card accounts API.
+      // Schedule the first call to the APIs.
       setTimeout(() => {
-        this.getCardAccounts();
+        this.getData();
+      }, this.config.updateInterval);
+    } else if (notification === "STORES_RESULT") {
+      if (payload.error) {
+        console.error(`Error getting stores: ${payload.error}`);
+        setTimeout(() => {
+          this.getData();
+        }, this.config.retryDelay);
+        return;
+      }
+
+      const stores = payload.stores;
+      if (!stores) {
+        console.error("Error: Unable to retrieve stores.");
+        setTimeout(() => {
+          this.getData();
+        }, this.config.retryDelay);
+        return;
+      }
+
+      console.log(`Got stores: ${JSON.stringify(stores)}`);
+      this.stores = stores;
+      this.updateDom();
+
+      // Schedule the next call to the APIs.
+      setTimeout(() => {
+        this.getData();
       }, this.config.updateInterval);
     } else if (notification === "CARD_ACCOUNTS_RESULT") {
       if (payload.error) {
         console.error(`Error getting card accounts: ${payload.error}`);
         setTimeout(() => {
-          this.getCardAccounts();
+          this.getData();
         }, this.config.retryDelay);
         return;
       }
@@ -81,7 +120,7 @@ getDom: function() {
       if (!cardAccounts) {
         console.error("Error: Unable to retrieve card accounts.");
         setTimeout(() => {
-          this.getCardAccounts();
+          this.getData();
         }, this.config.retryDelay);
         return;
       }
@@ -90,26 +129,40 @@ getDom: function() {
       this.cardAccounts = cardAccounts;
       this.updateDom();
 
-      // Schedule the next call to the card accounts API.
+      // Schedule the next call to the APIs.
       setTimeout(() => {
-        this.getCardAccounts();
+        this.getData();
       }, this.config.updateInterval);
     } else {
       console.warn(`Unknown socket notification received: ${notification}`);
     }
   },
 
-  getCardAccounts: function() {
-    console.log("Retrieving card accounts");
+  getData: function() {
+    console.log("Retrieving data");
 
-    const options = {
-      method: "GET",
-      url: `${this.config.apiUrl}/user/cardaccounts`,
-      headers: {
-        "AuthenticationTicket": this.authTicket
-      }
-    };
+    if (this.config.showStores) {
+      const storesOptions = {
+        method: "GET",
+        url: `${this.config.apiUrl}/user/stores`,
+        headers: {
+          "AuthenticationTicket": this.authTicket
+        }
+      };
 
-    this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
+      this.sendSocketNotification("GET_STORES", storesOptions);
+    }
+
+    if (this.config.showCardAccounts) {
+      const cardAccountsOptions = {
+        method: "GET",
+        url: `${this.config.apiUrl}/user/cardaccounts`,
+        headers: {
+          "AuthenticationTicket": this.authTicket
+        }
+      };
+
+      this.sendSocketNotification("GET_CARD_ACCOUNTS", cardAccountsOptions);
+    }
   }
 });
