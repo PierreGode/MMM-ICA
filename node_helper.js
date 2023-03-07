@@ -22,7 +22,7 @@ module.exports = NodeHelper.create({
         }
       };
 
-      this.makeRequest(options);
+      this.makeRequest(options, this.handleAuthTicketResult);
     } else if (notification === "GET_CARD_ACCOUNTS") {
       const options = payload;
       this.makeRequest(options, this.handleCardAccountsResult);
@@ -45,7 +45,18 @@ module.exports = NodeHelper.create({
       }
     });
   },
-  
+
+  handleAuthTicketResult: function(body) {
+    try {
+      const authTicket = JSON.parse(body).AuthenticationTicket;
+      console.log(`Got authentication ticket: ${authTicket}`);
+      this.sendSocketNotification("AUTH_TICKET_RESULT", { authTicket: authTicket });
+    } catch (error) {
+      console.error(`Error parsing authentication ticket JSON: ${error}`);
+      this.sendSocketNotification("AUTH_TICKET_RESULT", { error: error });
+    }
+  },
+
   handleCardAccountsResult: function(body) {
     try {
       const cardAccounts = JSON.parse(body);
