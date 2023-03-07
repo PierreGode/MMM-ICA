@@ -26,7 +26,7 @@ getDom: function() {
     wrapper.className = "small bright";
 
     if (this.cardAccounts) {
-      wrapper.innerHTML = `Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Balance}`;
+      wrapper.innerHTML = `Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Available}`;
     } else {
       wrapper.innerHTML = "Loading content...";
     }
