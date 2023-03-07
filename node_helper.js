@@ -6,47 +6,47 @@ module.exports = NodeHelper.create({
     console.log(`Starting helper: ${this.name}`);
   },
 
-  socketNotificationReceived: function(notification, payload) {
-    console.log("Received socket notification:", notification, "with payload:", payload);
+socketNotificationReceived: function(notification, payload) {
+  console.log("Received socket notification:", notification, "with payload:", payload);
 
-    if (notification === "GET_AUTH_TICKET") {
-      this.config = payload;
-      console.log("Retrieving authentication ticket");
+  if (notification === "GET_AUTH_TICKET") {
+    this.config = payload;
+    console.log("Retrieving authentication ticket");
 
-      const authHeader = `Basic ${Buffer.from(`${payload.username}:${payload.password}`).toString("base64")}`;
-      const options = {
-        method: "GET",
-        url: `${payload.apiUrl}/login`,
-        headers: {
-          "Authorization": authHeader
-        }
-      };
+    const authHeader = `Basic ${Buffer.from(`${payload.username}:${payload.password}`).toString("base64")}`;
+    const options = {
+      method: "GET",
+      url: `${payload.apiUrl}/login`,
+      headers: {
+        "Authorization": authHeader
+      }
+    };
 
-      this.makeRequest(options);
-    } else if (notification === "GET_CARD_ACCOUNTS") {
-      const options = {
-        method: "GET",
-        url: `${this.config.apiUrl}/user/cardaccounts`,
-        headers: {
-          "AuthenticationTicket": this.authTicket
-        },
-        callbackNotification: "CARD_ACCOUNTS_RESULT"
-      };
-      this.makeRequest(options, this.handleCardAccountsResult);
-    } else if (notification === "GET_STORES") {
-      const options = {
-        method: "GET",
-        url: `${this.config.apiUrl}/stores`,
-        headers: {
-          "AuthenticationTicket": this.authTicket
-        },
-        callbackNotification: "STORES_RESULT"
-      };
-      this.makeRequest(options, this.handleStoresResult);
-    } else {
-      console.warn(`Unknown socket notification received: ${notification}`);
-    }
-  },
+    this.makeRequest(options);
+  } else if (notification === "GET_CARD_ACCOUNTS") {
+    const options = {
+      method: "GET",
+      url: `${this.config.apiUrl}/user/cardaccounts`,
+      headers: {
+        "AuthenticationTicket": this.authTicket
+      },
+      callbackNotification: "CARD_ACCOUNTS_RESULT"
+    };
+    this.makeRequest(options, this.handleCardAccountsResult);
+  } else if (notification === "GET_STORES") {
+    const options = {
+      method: "GET",
+      url: `${this.config.apiUrl}/stores`,
+      headers: {
+        "AuthenticationTicket": this.authTicket
+      },
+      callbackNotification: "STORES_RESULT"
+    };
+    this.makeRequest(options, this.handleStoresResult);
+  } else {
+    console.warn(`Unknown socket notification received: ${notification}`);
+  }
+},
 
   makeRequest: function(options, callback) {
     var self = this;
