@@ -22,12 +22,26 @@ module.exports = NodeHelper.create({
         }
       };
 
-      this.makeRequest(options, this.handleAuthTicketResult);
+      this.makeRequest(options);
     } else if (notification === "GET_CARD_ACCOUNTS") {
-      const options = payload;
+      const options = {
+        method: "GET",
+        url: `${this.config.apiUrl}/user/cardaccounts`,
+        headers: {
+          "AuthenticationTicket": this.authTicket
+        },
+        callbackNotification: "CARD_ACCOUNTS_RESULT"
+      };
       this.makeRequest(options, this.handleCardAccountsResult);
     } else if (notification === "GET_STORES") {
-      const options = payload;
+      const options = {
+        method: "GET",
+        url: `${this.config.apiUrl}/stores`,
+        headers: {
+          "AuthenticationTicket": this.authTicket
+        },
+        callbackNotification: "STORES_RESULT"
+      };
       this.makeRequest(options, this.handleStoresResult);
     } else {
       console.warn(`Unknown socket notification received: ${notification}`);
@@ -44,25 +58,6 @@ module.exports = NodeHelper.create({
         self.sendSocketNotification(options.callbackNotification, { error: error });
       }
     });
-  },
-
-  handleAuthTicketResult: function(body) {
-    const authTicket = JSON.parse(body).AuthenticationTicket;
-    console.log(`Got authentication ticket: ${authTicket}`);
-    if (!authTicket) {
-      console.error("Error: Unable to retrieve authentication ticket.");
-      this.sendSocketNotification("AUTH_TICKET_RESULT", { error: "Unable to retrieve authentication ticket." });
-      return;
-    }
-    this.authTicket = authTicket;
-    const cardAccountsOptions = {
-      method: "GET",
-      url: `${this.config.apiUrl}/user/cardaccounts`,
-      headers: {
-        "AuthenticationTicket": authTicket
-      }
-    };
-    this.makeRequest(cardAccountsOptions, this.handleCardAccountsResult);
   },
 
   handleCardAccountsResult: function(body) {
