@@ -10,67 +10,106 @@ module.exports = NodeHelper.create({
     console.log("Received socket notification:", notification, "with payload:", payload);
 
     if (notification === "GET_AUTH_TICKET") {
-      const index = payload.index;
-      const config = payload.config;
-      console.log(`Retrieving authentication ticket for endpoint ${index}`);
+      this.config = payload;
+      console.log("Retrieving authentication ticket");
 
-      const authHeader = `Basic ${Buffer.from(`${config.username}:${config.password}`).toString("base64")}`;
+      const authHeader = `Basic ${Buffer.from(`${payload.username}:${payload.password}`).toString("base64")}`;
       const options = {
         method: "GET",
-        url: `${config.apiUrl}/login`,
+        url: `${payload.apiUrl}/login`,
         headers: {
           "Authorization": authHeader
         }
       };
 
-      this.makeRequest(index, options);
-    } else if (notification === "GET_CARD_ACCOUNTS") {
-      const index = payload.index;
-      const options = payload.options;
-      console.log(`Retrieving card accounts for endpoint ${index}`);
+      this.makeRequest(options, (error, response, body) => {
+        if (!error && response.statusCode === 200) {
+          const authTicket = response.headers["authenticationticket"];
+          console.log(response.headers); // Add this line
+          if (!authTicket) {
+            console.error("Error: Unable to retrieve authentication ticket.");
+            this.sendSocketNotification("AUTH_TICKET_RESULT", { error: "Unable to retrieve authentication ticket." });
+            return;
+          }
 
-      this.makeRequest(index, options);
-    }
-  },
+          console.log(`Got authentication ticket: ${authTicket}`);
+          this.authTickets[payload.index] = authTicket;
 
-  makeRequest: function(index, options) {
-    var self = this;
-    request(options, function(error, response, body) {
-      if (!error && response.statusCode === 200) {
-        const authTicket = response.headers["authenticationticket"];
-        console.log(`Got authentication ticket for endpoint ${index}: ${authTicket}`);
-        if (!authTicket) {
-          console.error(`Error: Unable to retrieve authentication ticket for endpoint ${index}.`);
-          self.sendSocketNotification("AUTH_TICKET_RESULT", { index: index, error: "Unable to retrieve authentication ticket." });
-          return;
-        }
-
-        self.sendSocketNotification("AUTH_TICKET_RESULT", { index: index, authTicket: authTicket });
-
-        if (options.url.endsWith("/login")) {
-          // This was an authentication request, so we need to retrieve the card accounts.
           const cardAccountsOptions = {
             method: "GET",
-            url: `${options.url.substring(0, options.url.length - 6)}/user/cardaccounts`,
+            url: `${payload.apiUrl}/user/cardaccounts`,
             headers: {
               "AuthenticationTicket": authTicket
             }
           };
-          self.makeRequest(index, cardAccountsOptions);
+
+          this.makeCardAccountsRequest(payload.index, cardAccountsOptions);
         } else {
-          // This was a card accounts request, so we need to parse the data and send it to the client.
+          console.error(`Error getting authentication ticket: ${error}`);
+          this.sendSocketNotification("AUTH_TICKET_RESULT", { index: payload.index, error: error });
+        }
+      });
+    } else if (notification === "GET_CARD_ACCOUNTS") {
+      const index = payload.index;
+      const options = payload.options;
+
+      console.log(`Retrieving card accounts for endpoint ${index}`);
+
+      this.makeRequest(options, (error, response, body) => {
+        if (!error && response.statusCode === 200) {
           const cardAccounts = JSON.parse(body);
-          console.log(`Got card accounts for endpoint ${index}: ${JSON.stringify(cardAccounts)}`);
-          self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { index: index, cardAccounts: cardAccounts });
-        }
-      } else {
-        console.error(`Error getting data for endpoint ${index}: ${error}`);
-        if (options.url.endsWith("/login")) {
-          self.sendSocketNotification("AUTH_TICKET_RESULT", { index: index, error: error });
+          console.log(`Got card accounts for endpoint ${index}:`, cardAccounts);
+          this.endpointData[index].cardAccounts = cardAccounts;
+
+          this.sendSocketNotification("CARD_ACCOUNTS_RESULT", { index: index, cardAccounts: cardAccounts });
         } else {
-          self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { index: index, error: error });
+          console.error(`Error getting card accounts for endpoint ${index}: ${error}`);
+          this.sendSocketNotification("CARD_ACCOUNTS_RESULT", { index: index, error: error });
         }
+      });
+    }
+  },
+
+  makeRequest: function(options, callback) {
+    request(options, callback);
+  },
+    createTransaction: function(cardAccountIndex, transactionData) {
+    const endpointIndex = this.config.cardAccounts[cardAccountIndex].endpointIndex;
+    const cardAccountId = this.endpointData[endpointIndex].cardAccounts[cardAccountIndex].id;
+
+    const transactionOptions = {
+      method: "POST",
+      url: `${this.config.apiUrl}/user/cardaccounts/${cardAccountId}/transactions`,
+      headers: {
+        "AuthenticationTicket": this.authTickets[endpointIndex],
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(transactionData)
+    };
+
+    console.log(`Creating transaction for card account ${cardAccountId}:`, transactionData);
+    this.makeRequest(transactionOptions, (error, response, body) => {
+      if (!error && response.statusCode === 201) {
+        console.log(`Transaction created for card account ${cardAccountId}.`);
+        this.sendSocketNotification("TRANSACTION_CREATED", { cardAccountIndex: cardAccountIndex, transaction: transactionData });
+      } else {
+        console.error(`Error creating transaction for card account ${cardAccountId}: ${error}`);
+        this.sendSocketNotification("TRANSACTION_CREATED", { cardAccountIndex: cardAccountIndex, error: error });
       }
     });
+  },
+
+  getEndpointData: function() {
+    const endpointData = [];
+    const endpointCount = this.config.endpoints.length;
+
+    for (let i = 0; i < endpointCount; i++) {
+      endpointData.push({
+        endpoint: this.config.endpoints[i],
+        cardAccounts: []
+      });
+    }
+
+    return endpointData;
   }
 });
