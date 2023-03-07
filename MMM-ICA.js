@@ -27,12 +27,15 @@ Module.register("MMM-ICA", {
     const wrapper = document.createElement("div");
     wrapper.className = "small bright";
 
-    if (this.cardAccounts && this.stores) {
+    if (this.cardAccounts) {
       if (this.config.showCardAccounts) {
-        wrapper.innerHTML += `Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Balance}<br>`;
+        for (const card of this.cardAccounts.Cards) {
+          for (const account of card.Accounts) {
+            wrapper.innerHTML += `${card.CardDescription} (${account.AccountDescription}): ${account.Balance}<br>`;
+          }
+        }
       }
-
-      if (this.config.showStores) {
+      if (this.config.showStores && this.stores) {
         wrapper.innerHTML += `Butiker: ${this.stores.map(store => store.StoreDescription).join(", ")}`;
       }
     } else {
@@ -42,7 +45,6 @@ Module.register("MMM-ICA", {
     return wrapper;
   },
 
-  // Override socket notification handler.
   socketNotificationReceived: function(notification, payload) {
     console.log("Received socket notification:", notification, "with payload:", payload);
 
@@ -72,7 +74,6 @@ Module.register("MMM-ICA", {
       this.authTicket = authTicket;
       this.updateDom();
 
-      // Schedule the first call to the card accounts API.
       setTimeout(() => {
         this.getCardAccounts();
       }, this.config.updateInterval);
@@ -98,7 +99,6 @@ Module.register("MMM-ICA", {
       this.cardAccounts = cardAccounts;
       this.updateDom();
 
-      // Schedule the next call to the stores API.
       setTimeout(() => {
         this.getStores();
       }, this.config.updateInterval);
@@ -111,32 +111,38 @@ Module.register("MMM-ICA", {
         return;
       }
 
-      const stores = payload.stores;
-      if (!stores) {
-        console.error("Error: Unable to retrieve stores.");
-        setTimeout(() => {
-          this.getStores();
-        },
-makeStoresRequest: function() {
-  const self = this;
+       const stores = payload.stores;
+  if (!stores) {
+    console.error("Error: Unable to retrieve stores.");
+    setTimeout(() => {
+      this.getStores();
+    }, this.config.retryDelay);
+    return;
+  }
 
-  const options = {
-    method: "GET",
-    url: `${self.config.apiUrl}/user/stores`,
-    headers: {
-      "AuthenticationTicket": self.authTicket
-    }
-  };
+  console.log(`Got stores: ${JSON.stringify(stores)}`);
+  this.stores = stores;
+  this.updateDom();
 
-  request(options, function(error, response, body) {
-    if (!error && response.statusCode === 200) {
-      const stores = JSON.parse(body);
-      console.log("Got stores:", stores);
-      self.sendSocketNotification("STORES_RESULT", { stores: stores });
-    } else {
-      console.error(`Error getting stores: ${error}`);
-      self.sendSocketNotification("STORES_RESULT", { error: error });
-    }
-  });
+  // Schedule the next call to the stores API.
+  setTimeout(() => {
+    this.getStores();
+  }, this.config.updateInterval);
+} else {
+  console.warn(`Unknown socket notification received: ${notification}`);
+}
 },
+
+getStores: function() {
+console.log("Retrieving stores");
+  const options = {
+  method: "GET",
+  url: `${this.config.apiUrl}/user/stores`,
+  headers: {
+    "AuthenticationTicket": this.authTicket
+  }
+};
+
+this.sendSocketNotification("GET_STORES", options);
+}
 });
