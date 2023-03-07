@@ -22,69 +22,7 @@ module.exports = NodeHelper.create({
         }
       };
 
-      this.makeRequest(options);
-    }
-  },
-
-  makeRequest: function(options) {
-    var self = this;
-    request(options, function(error, response, body) {
-      if (!error && response.statusCode === 200) {
-        const authTicket = response.headers["authenticationticket"];
-        console.log(response.headers); // Add this line
-        if (!authTicket) {
-          console.error("Error: Unable to retrieve authentication ticket.");
-          self.sendSocketNotification("AUTH_TICKET_RESULT", { error: "Unable to retrieve authentication ticket." });
-          return;
-        }
-
-        console.log(`Got authentication ticket: ${authTicket}`);
-        self.authTicket = authTicket;
-
-        const cardAccountsOptions = {
-          method: "GET",
-          url: `${self.config.apiUrl}/user/cardaccounts`,
-          headers: {
-            "AuthenticationTicket": authTicket
-          }
-        };
-
-        self.makeCardAccountsRequest(cardAccountsOptions);
-      } else {
-        console.error(`Error getting authentication ticket: ${error}`);
-        self.sendSocketNotification("AUTH_TICKET_RESULT", { error: error });
-      }
-    });
-  },
-  
-  makeCardAccountsRequest: function(options) {
-    var self = this;
-    request(options, function(error, response, body) {
-      if (!error && response.statusCode === 200) {
-        const cardAccounts = JSON.parse(body);
-        console.log("Got card accounts:", cardAccounts);
-        self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { cardAccounts: cardAccounts });
-      } else {
-        console.error(`Error getting card accounts: ${error}`);
-        self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { error: error });
-      }
-    });
-  }
-});
-if (notification === "GET_AUTH_TICKET") {
-      this.config = payload;
-      console.log("Retrieving authentication ticket");
-
-      const authHeader = `Basic ${Buffer.from(`${payload.username}:${payload.password}`).toString("base64")}`;
-      const options = {
-        method: "GET",
-        url: `${payload.apiUrl}/login`,
-        headers: {
-          "Authorization": authHeader
-        }
-      };
-
-      this.makeRequest(options);
+      this.makeRequest(options, notification);
     } else if (notification === "GET_CARD_ACCOUNTS" || notification === "GET_MIN_BONUS" || notification === "GET_STORES" || notification === "GET_OFFERS") {
       const options = payload;
       this.makeRequest(options, notification);
@@ -115,7 +53,7 @@ if (notification === "GET_AUTH_TICKET") {
             }
           };
 
-          self.makeCardAccountsRequest(cardAccountsOptions);
+          self.makeRequest(cardAccountsOptions, "CARD_ACCOUNTS_RESULT");
 
           if (self.config.settings.apiEndpoints.minbonus) {
             const minBonusOptions = {
