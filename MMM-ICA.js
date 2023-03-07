@@ -4,9 +4,7 @@ Module.register("MMM-ICA", {
     password: "",
     apiUrl: "",
     updateInterval: 60 * 60 * 1000, // Update every hour.
-    retryDelay: 5 * 60 * 1000, // Retry every 5 minutes if an error occurs.
-    showCardAccounts: true,
-    showStores: true
+    retryDelay: 5 * 60 * 1000 // Retry every 5 minutes if an error occurs.
   },
 
   start: function() {
@@ -108,53 +106,13 @@ Module.register("MMM-ICA", {
       this.updateDom();
 
       // Schedule the next call to the card accounts API.
-      setTimeout(()
-      () => {
+      setTimeout(() => {
         this.getCardAccounts();
       }, this.config.updateInterval);
-    } else if (notification === "STORES_RESULT") {
-      if (payload.error) {
-        console.error(`Error getting stores: ${payload.error}`);
-        setTimeout(() => {
-          this.getStores();
-        }, this.config.retryDelay);
-        return;
-      }
-
-      const stores = payload.stores;
-      if (!stores) {
-        console.error("Error: Unable to retrieve stores.");
-        setTimeout(() => {
-          this.getStores();
-        }, this.config.retryDelay);
-        return;
-      }
-
-      console.log(`Got stores: ${JSON.stringify(stores)}`);
-      this.stores = stores;
-      this.updateDom();
-
-      // Schedule the next call to the stores API.
-      setTimeout(() => {
-        this.getStores();
-      }, this.config.updateInterval);
-    } else {
-      console.warn(`Unknown socket notification received: ${notification}`);
     }
   },
 
   getCardAccounts: function() {
-    console.log("Retrieving card accounts");
-
-    const options = {
-      method: "GET",
-      url: `${this.config.apiUrl}/user/cardaccounts`,
-      headers: {
-        "AuthenticationTicket": this.authTicket
-      }
-    };
-
-    this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
   },
 
   getStores: function() {
