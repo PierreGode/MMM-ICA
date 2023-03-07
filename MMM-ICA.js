@@ -101,9 +101,9 @@ Module.register("MMM-ICA", {
     } else if (notification === "STORES_RESULT") {
       if (payload.error) {
         console.error(`Error getting stores: ${payload.error}`);
-        setTimeout(() => {
-          this.getStores();
-        }, this.config.retryDelay);
+setTimeout(() => {
+  this.getStores();
+}, this.config.retryDelay);
         return;
       }
 
