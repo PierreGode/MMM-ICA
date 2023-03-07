@@ -25,11 +25,11 @@ getDom: function() {
     const wrapper = document.createElement("div");
     wrapper.className = "small bright";
 
-    if (this.cardAccounts) {
-      wrapper.innerHTML = `Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Balance}`;
-    } else {
-      wrapper.innerHTML = "Loading content...";
-    }
+if (this.cardAccounts && this.stores) {
+  wrapper.innerHTML = `Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Balance} - Stores: ${this.stores.length}`;
+} else {
+  wrapper.innerHTML = "Loading content...";
+}
 
     return wrapper;
   },
