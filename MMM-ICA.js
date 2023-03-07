@@ -4,7 +4,9 @@ Module.register("MMM-ICA", {
     password: "",
     apiUrl: "",
     updateInterval: 60 * 60 * 1000, // Update every hour.
-    retryDelay: 5 * 60 * 1000 // Retry every 5 minutes if an error occurs.
+    retryDelay: 5 * 60 * 1000, // Retry every 5 minutes if an error occurs.
+    showCardAccounts: true,
+    showStores: true
   },
 
   start: function() {
@@ -21,19 +23,24 @@ Module.register("MMM-ICA", {
     this.sendSocketNotification("GET_AUTH_TICKET", this.config);
   },
 
-getDom: function() {
-  const wrapper = document.createElement("div");
-  wrapper.className = "small bright";
+  getDom: function() {
+    const wrapper = document.createElement("div");
+    wrapper.className = "small bright";
 
-  if (this.cardAccounts && this.stores) {
-    wrapper.innerHTML = `Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Balance}<br>
-                          Butiker: ${this.stores.map(store => store.StoreDescription).join(", ")}`;
-  } else {
-    wrapper.innerHTML = "Loading content...";
-  }
+    if (this.cardAccounts && this.stores) {
+      if (this.config.showCardAccounts) {
+        wrapper.innerHTML += `Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Balance}<br>`;
+      }
 
-  return wrapper;
-},
+      if (this.config.showStores) {
+        wrapper.innerHTML += `Butiker: ${this.stores.map(store => store.StoreDescription).join(", ")}`;
+      }
+    } else {
+      wrapper.innerHTML = "Loading content...";
+    }
+
+    return wrapper;
+  },
 
   // Override socket notification handler.
   socketNotificationReceived: function(notification, payload) {
