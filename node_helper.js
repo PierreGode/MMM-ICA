@@ -47,14 +47,22 @@ module.exports = NodeHelper.create({
   },
 
   handleAuthTicketResult: function(body) {
-    try {
-      const authTicket = JSON.parse(body).AuthenticationTicket;
-      console.log(`Got authentication ticket: ${authTicket}`);
-      this.sendSocketNotification("AUTH_TICKET_RESULT", { authTicket: authTicket });
-    } catch (error) {
-      console.error(`Error parsing authentication ticket JSON: ${error}`);
-      this.sendSocketNotification("AUTH_TICKET_RESULT", { error: error });
+    const authTicket = JSON.parse(body).AuthenticationTicket;
+    console.log(`Got authentication ticket: ${authTicket}`);
+    if (!authTicket) {
+      console.error("Error: Unable to retrieve authentication ticket.");
+      this.sendSocketNotification("AUTH_TICKET_RESULT", { error: "Unable to retrieve authentication ticket." });
+      return;
     }
+    this.authTicket = authTicket;
+    const cardAccountsOptions = {
+      method: "GET",
+      url: `${this.config.apiUrl}/user/cardaccounts`,
+      headers: {
+        "AuthenticationTicket": authTicket
+      }
+    };
+    this.makeRequest(cardAccountsOptions, this.handleCardAccountsResult);
   },
 
   handleCardAccountsResult: function(body) {
