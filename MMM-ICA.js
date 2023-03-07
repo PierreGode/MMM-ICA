@@ -4,9 +4,7 @@ Module.register("MMM-ICA", {
     password: "",
     apiUrl: "",
     updateInterval: 60 * 60 * 1000, // Update every hour.
-    retryDelay: 5 * 60 * 1000, // Retry every 5 minutes if an error occurs.
-    showCardAccounts: true,
-    showStores: true
+    retryDelay: 5 * 60 * 1000 // Retry every 5 minutes if an error occurs.
   },
 
   start: function() {
@@ -27,17 +25,8 @@ Module.register("MMM-ICA", {
     const wrapper = document.createElement("div");
     wrapper.className = "small bright";
 
-    if (this.cardAccounts) {
-      if (this.config.showCardAccounts) {
-        for (const card of this.cardAccounts.Cards) {
-          for (const account of card.Accounts) {
-            wrapper.innerHTML += `${card.CardDescription} (${account.AccountDescription}): ${account.Balance}<br>`;
-          }
-        }
-      }
-      if (this.config.showStores && this.stores) {
-        wrapper.innerHTML += `Butiker: ${this.stores.map(store => store.StoreDescription).join(", ")}`;
-      }
+    if (this.cardAccounts && this.stores) {
+      wrapper.innerHTML = `Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Balance} | Stores: ${this.stores}`;
     } else {
       wrapper.innerHTML = "Loading content...";
     }
@@ -74,6 +63,7 @@ Module.register("MMM-ICA", {
       this.authTicket = authTicket;
       this.updateDom();
 
+      // Schedule the first call to the card accounts API.
       setTimeout(() => {
         this.getCardAccounts();
       }, this.config.updateInterval);
@@ -99,6 +89,12 @@ Module.register("MMM-ICA", {
       this.cardAccounts = cardAccounts;
       this.updateDom();
 
+      // Schedule the next call to the card accounts API.
+      setTimeout(() => {
+        this.getCardAccounts();
+      }, this.config.updateInterval);
+
+      // Schedule the first call to the stores API.
       setTimeout(() => {
         this.getStores();
       }, this.config.updateInterval);
@@ -111,38 +107,52 @@ Module.register("MMM-ICA", {
         return;
       }
 
-       const stores = payload.stores;
-  if (!stores) {
-    console.error("Error: Unable to retrieve stores.");
-    setTimeout(() => {
-      this.getStores();
-    }, this.config.retryDelay);
-    return;
+      const stores = payload.stores;
+      if (!stores) {
+        console.error("Error: Unable to retrieve stores.");
+        setTimeout(() => {
+                  this.getStores();
+      }, this.config.updateInterval);
+
+      console.log(`Got stores: ${JSON.stringify(stores)}`);
+      this.stores = stores;
+      this.updateDom();
+
+      // Schedule the next call to the stores API.
+      setTimeout(() => {
+        this.getStores();
+      }, this.config.updateInterval);
+    } else {
+      console.warn(`Unknown socket notification received: ${notification}`);
+    }
+  },
+
+  getCardAccounts: function() {
+    console.log("Retrieving card accounts");
+
+    const options = {
+      method: "GET",
+      url: `${this.config.apiUrl}/user/cardaccounts`,
+      headers: {
+        "AuthenticationTicket": this.authTicket
+      }
+    };
+
+    this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
+  },
+
+  getStores: function() {
+    console.log("Retrieving stores");
+
+    const options = {
+      method: "GET",
+      url: `${this.config.apiUrl}/user/stores`,
+      headers: {
+        "AuthenticationTicket": this.authTicket
+      }
+    };
+
+    this.sendSocketNotification("GET_STORES", options);
   }
-
-  console.log(`Got stores: ${JSON.stringify(stores)}`);
-  this.stores = stores;
-  this.updateDom();
-
-  // Schedule the next call to the stores API.
-  setTimeout(() => {
-    this.getStores();
-  }, this.config.updateInterval);
-} else {
-  console.warn(`Unknown socket notification received: ${notification}`);
-}
-},
-
-getStores: function() {
-console.log("Retrieving stores");
-  const options = {
-  method: "GET",
-  url: `${this.config.apiUrl}/user/stores`,
-  headers: {
-    "AuthenticationTicket": this.authTicket
-  }
-};
-
-this.sendSocketNotification("GET_STORES", options);
-}
 });
+
