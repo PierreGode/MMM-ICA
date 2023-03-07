@@ -22,79 +22,79 @@ module.exports = NodeHelper.create({
         }
       };
 
-      this.makeRequest(options, notification);
-    } else if (notification === "GET_CARD_ACCOUNTS" || notification === "GET_MIN_BONUS" || notification === "GET_STORES" || notification === "GET_OFFERS") {
+      this.makeRequest(options);
+    } else if (notification === "GET_CARD_ACCOUNTS") {
       const options = payload;
-      this.makeRequest(options, notification);
+      options.headers = {
+        ...options.headers,
+        "Content-Type": "application/json"
+      };
+
+      this.makeCardAccountsRequest(options);
     }
   },
 
-  makeRequest: function(options, notification = "") {
+  makeRequest: function(options) {
     var self = this;
     request(options, function(error, response, body) {
       if (!error && response.statusCode === 200) {
-        if (notification === "GET_AUTH_TICKET") {
-          const authTicket = response.headers["authenticationticket"];
-          console.log(response.headers); // Add this line
-          if (!authTicket) {
-            console.error("Error: Unable to retrieve authentication ticket.");
-            self.sendSocketNotification("AUTH_TICKET_RESULT", { error: "Unable to retrieve authentication ticket." });
-            return;
-          }
+        const authTicket = response.headers["authenticationticket"];
+        console.log(response.headers);
 
-          console.log(`Got authentication ticket: ${authTicket}`);
-          self.authTicket = authTicket;
-
-          const cardAccountsOptions = {
-            method: "GET",
-            url: `${self.config.apiUrl}/user/cardaccounts`,
-            headers: {
-              "AuthenticationTicket": authTicket
-            }
-          };
-
-          self.makeRequest(cardAccountsOptions, "CARD_ACCOUNTS_RESULT");
-
-          if (self.config.settings.apiEndpoints.minbonus) {
-            const minBonusOptions = {
-              method: "GET",
-              url: `${self.config.apiUrl}/user/minbonustransaction`,
-              headers: {
-                "AuthenticationTicket": authTicket
-              }
-            };
-            self.makeRequest(minBonusOptions, "MIN_BONUS_RESULT");
-          }
-
-          if (self.config.settings.apiEndpoints.stores) {
-            const storesOptions = {
-              method: "GET",
-              url: `${self.config.storeApiUrl}/user/stores`,
-              headers: {
-                "AuthenticationTicket": authTicket
-              }
-            };
-            self.makeRequest(storesOptions, "STORES_RESULT");
-          }
-
-          if (self.config.settings.apiEndpoints.showoffer && self.config.settings.apiEndpoints.offerstoreid) {
-            const offersOptions = {
-              method: "GET",
-              url: `${self.config.apiUrl}/offers?Stores=${self.config.settings.apiEndpoints.offerstoreid}`,
-              headers: {
-                "AuthenticationTicket": authTicket
-              }
-            };
-            self.makeRequest(offersOptions, "OFFERS_RESULT");
-          }
-        } else {
-          const result = JSON.parse(body);
-          self.sendSocketNotification(`${notification}`, { [`${notification.toLowerCase().replace("get_", "")}`]: result });
+        if (!authTicket) {
+          console.error("Error: Unable to retrieve authentication ticket.");
+          self.sendSocketNotification("AUTH_TICKET_RESULT", { error: "Unable to retrieve authentication ticket." });
+          return;
         }
+
+        console.log(`Got authentication ticket: ${authTicket}`);
+        self.authTicket = authTicket;
+
+        const cardAccountsOptions = {
+          method: "GET",
+          url: `${self.config.apiUrl}/user/cardaccounts`,
+          headers: {
+            "AuthenticationTicket": authTicket
+          }
+        };
+
+        self.makeCardAccountsRequest(cardAccountsOptions);
       } else {
-        console.error(`Error getting ${notification.toLowerCase().replace("get_", "")}: ${error}`);
-        self.sendSocketNotification(`${notification}_RESULT`, { error: error });
+        console.error(`Error getting authentication ticket: ${error}`);
+        self.sendSocketNotification("AUTH_TICKET_RESULT", { error: error });
+      }
+    });
+  },
+  
+  makeCardAccountsRequest: function(options) {
+    var self = this;
+    request(options, function(error, response, body) {
+      if (!error && response.statusCode === 200) {
+        const apiEndpoints = self.config.apiEndpoints;
+        let result = {};
+
+        if (apiEndpoints.minbonus) {
+          result.minBonus = JSON.parse(body).Cards[0].Accounts[0].Balance;
+        }
+
+        if (apiEndpoints.stores) {
+          const stores = JSON.parse(body).Stores;
+          result.stores = stores.map((store) => ({ StoreId: store.StoreId, Name: store.Name }));
+        }
+
+        if (apiEndpoints.offers) {
+          const storeId = apiEndpoints.offers;
+          const offers = JSON.parse(body).Offers.filter((offer) => offer.StoreId === storeId);
+          result.offers = { Offers: offers };
+        }
+
+        console.log(`Got card accounts: ${JSON.stringify(result)}`);
+        self.sendSocketNotification("CARD_ACCOUNTS_RESULT", result);
+      } else {
+        console.error(`Error getting card accounts: ${error}`);
+        self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { error: error });
       }
     });
   }
+});
 });
