@@ -23,14 +23,6 @@ module.exports = NodeHelper.create({
       };
 
       this.makeRequest(options);
-    } else if (notification === "GET_CARD_ACCOUNTS") {
-      const options = payload;
-      options.headers = {
-        ...options.headers,
-        "Content-Type": "application/json"
-      };
-
-      this.makeCardAccountsRequest(options);
     }
   },
 
@@ -39,8 +31,7 @@ module.exports = NodeHelper.create({
     request(options, function(error, response, body) {
       if (!error && response.statusCode === 200) {
         const authTicket = response.headers["authenticationticket"];
-        console.log(response.headers);
-
+        console.log(response.headers); // Add this line
         if (!authTicket) {
           console.error("Error: Unable to retrieve authentication ticket.");
           self.sendSocketNotification("AUTH_TICKET_RESULT", { error: "Unable to retrieve authentication ticket." });
@@ -70,31 +61,13 @@ module.exports = NodeHelper.create({
     var self = this;
     request(options, function(error, response, body) {
       if (!error && response.statusCode === 200) {
-        const apiEndpoints = self.config.apiEndpoints;
-        let result = {};
-
-        if (apiEndpoints.minbonus) {
-          result.minBonus = JSON.parse(body).Cards[0].Accounts[0].Balance;
-        }
-
-        if (apiEndpoints.stores) {
-          const stores = JSON.parse(body).Stores;
-          result.stores = stores.map((store) => ({ StoreId: store.StoreId, Name: store.Name }));
-        }
-
-        if (apiEndpoints.offers) {
-          const storeId = apiEndpoints.offers;
-          const offers = JSON.parse(body).Offers.filter((offer) => offer.StoreId === storeId);
-          result.offers = { Offers: offers };
-        }
-
-        console.log(`Got card accounts: ${JSON.stringify(result)}`);
-        self.sendSocketNotification("CARD_ACCOUNTS_RESULT", result);
+        const cardAccounts = JSON.parse(body);
+        console.log("Got card accounts:", cardAccounts);
+        self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { cardAccounts: cardAccounts });
       } else {
         console.error(`Error getting card accounts: ${error}`);
         self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { error: error });
       }
     });
   }
-});
 });
