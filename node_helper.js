@@ -23,12 +23,6 @@ module.exports = NodeHelper.create({
       };
 
       this.makeRequest(options);
-    } else if (notification === "GET_CARD_ACCOUNTS") {
-      const options = payload;
-      this.makeCardAccountsRequest(options);
-    } else if (notification === "GET_STORES") {
-      const options = payload;
-      this.makeStoresRequest(options);
     }
   },
 
@@ -73,20 +67,6 @@ module.exports = NodeHelper.create({
       } else {
         console.error(`Error getting card accounts: ${error}`);
         self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { error: error });
-      }
-    });
-  },
-
-  makeStoresRequest: function(options) {
-    var self = this;
-    request(options, function(error, response, body) {
-      if (!error && response.statusCode === 200) {
-        const stores = JSON.parse(body);
-        console.log("Got stores:", stores);
-        self.sendSocketNotification("STORES_RESULT", { stores: stores });
-      } else {
-        console.error(`Error getting stores: ${error}`);
-        self.sendSocketNotification("STORES_RESULT", { error: error });
       }
     });
   }
