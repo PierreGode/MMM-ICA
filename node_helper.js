@@ -75,32 +75,30 @@ module.exports = NodeHelper.create({
     });
   },
   
-  makeCardAccountsRequest: function(options) {
-    var self = this;
-    request(options, function(error, response, body) {
-      if (!error && response.statusCode === 200) {
-        const cardAccounts = JSON.parse(body);
-        console.log("Got card accounts:", cardAccounts);
-        self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { cardAccounts: cardAccounts });
-     
-} else {
-    console.error(`Error getting card accounts: ${error}`);
-    self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { error: error });
-  }
-});
+ makeCardAccountsRequest: function(options) {
+  var self = this;
+  request(options, function(error, response, body) {
+    if (!error && response.statusCode === 200) {
+      const cardAccounts = JSON.parse(body);
+      console.log("Got card accounts:", cardAccounts);
+      self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { cardAccounts: cardAccounts });
+    } else {
+      console.error(`Error getting card accounts: ${error}`);
+      self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { error: error });
+    }
+  });
 },
 
 makeStoresRequest: function(options) {
-var self = this;
-request(options, function(error, response, body) {
-if (!error && response.statusCode === 200) {
-const stores = JSON.parse(body);
-console.log("Got stores:", stores);
-self.sendSocketNotification("STORES_RESULT", { stores: stores });
-} else {
-console.error(Error getting stores: ${error});
-self.sendSocketNotification("STORES_RESULT", { error: error });
+  var self = this;
+  request(options, function(error, response, body) {
+    if (!error && response.statusCode === 200) {
+      const stores = JSON.parse(body);
+      console.log("Got stores:", stores);
+      self.sendSocketNotification("STORES_RESULT", { stores: stores });
+    } else {
+      console.error(`Error getting stores: ${error}`);
+      self.sendSocketNotification("STORES_RESULT", { error: error });
+    }
+  });
 }
-});
-}
-});
