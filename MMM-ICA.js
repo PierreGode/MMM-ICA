@@ -25,16 +25,12 @@ Module.register("MMM-ICA", {
     const wrapper = document.createElement("div");
     wrapper.className = "small bright";
 
-    if (this.cardAccounts && this.config.showCardAccounts) {
-      wrapper.innerHTML += `Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Balance}<br>`;
-    }
-
-    if (this.stores && this.config.showStores) {
-      wrapper.innerHTML += `Butik: ${this.stores[0].Address.PostalArea}<br>`;
-    }
-
-    if (!this.cardAccounts && !this.stores) {
-      wrapper.innerHTML = "Waiting for data...";
+    if (this.cardAccounts && this.stores) {
+      const balance = this.cardAccounts.Cards[0].Accounts[0].Balance;
+      const storeCount = this.stores.length;
+      wrapper.innerHTML = `Saldo: ${balance} - Butiker: ${storeCount}`;
+    } else {
+      wrapper.innerHTML = "Loading content...";
     }
 
     return wrapper;
@@ -70,19 +66,10 @@ Module.register("MMM-ICA", {
       this.authTicket = authTicket;
       this.updateDom();
 
-      if (this.config.showCardAccounts) {
-        // Schedule the first call to the card accounts API.
-        setTimeout(() => {
-          this.getCardAccounts();
-        }, this.config.updateInterval);
-      }
-
-      if (this.config.showStores) {
-        // Schedule the first call to the stores API.
-        setTimeout(() => {
-          this.getStores();
-        }, this.config.updateInterval);
-      }
+      // Schedule the first call to the card accounts API.
+      setTimeout(() => {
+        this.getCardAccounts();
+      }, this.config.updateInterval);
     } else if (notification === "CARD_ACCOUNTS_RESULT") {
       if (payload.error) {
         console.error(`Error getting card accounts: ${payload.error}`);
@@ -105,27 +92,45 @@ Module.register("MMM-ICA", {
       this.cardAccounts = cardAccounts;
       this.updateDom();
 
-      // Schedule the next call to the card accounts API.
+      // Schedule the next call to the stores API.
       setTimeout(() => {
-        this.getCardAccounts();
+        this.getStores();
       }, this.config.updateInterval);
-    }
-  },
+    } else if (notification === "STORES_RESULT") {
+      if (payload.error) {
+        console.error(`Error getting stores: ${payload.error}`);
+        setTimeout(() => {
+          this.getStores();
+        }, this.config.retryDelay);
+        return;
+      }
 
-  getCardAccounts: function() {
-  },
-
-  getStores: function() {
-    console.log("Retrieving stores");
+      const stores = payload.stores;
+      if (!stores) {
+        console.error("Error: Unable to retrieve stores.");
+        setTimeout(() => {
+          this.getStores();
+        },
+  makeStoresRequest: function() {
+    const self = this;
 
     const options = {
       method: "GET",
-      url: `${this.config.apiUrl}/user/stores`,
+      url: `${self.config.apiUrl}/user/stores`,
       headers: {
-        "AuthenticationTicket": this.authTicket
+        "AuthenticationTicket": self.authTicket
       }
     };
 
-    this.sendSocketNotification("GET_STORES", options);
+    request(options, function(error, response, body) {
+      if (!error && response.statusCode === 200) {
+        const stores = JSON.parse(body);
+        console.log("Got stores:", stores);
+        self.sendSocketNotification("STORES_RESULT", { stores: stores });
+      } else {
+        console.error(`Error getting stores: ${error}`);
+        self.sendSocketNotification("STORES_RESULT", { error: error });
+      }
+    });
   }
 });
