@@ -21,20 +21,19 @@ Module.register("MMM-ICA", {
     this.sendSocketNotification("GET_AUTH_TICKET", this.config);
   },
 
-  getDom: function() {
-    const wrapper = document.createElement("div");
-    wrapper.className = "small bright";
+getDom: function() {
+  const wrapper = document.createElement("div");
+  wrapper.className = "small bright";
 
-    if (this.cardAccounts && this.stores) {
-      const balance = this.cardAccounts.Cards[0].Accounts[0].Balance;
-      const storeCount = this.stores.length;
-      wrapper.innerHTML = `Saldo: ${balance} - Butiker: ${storeCount}`;
-    } else {
-      wrapper.innerHTML = "Loading content...";
-    }
+  if (this.cardAccounts && this.stores) {
+    wrapper.innerHTML = `Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Balance}<br>
+                          Butiker: ${this.stores.map(store => store.StoreDescription).join(", ")}`;
+  } else {
+    wrapper.innerHTML = "Loading content...";
+  }
 
-    return wrapper;
-  },
+  return wrapper;
+},
 
   // Override socket notification handler.
   socketNotificationReceived: function(notification, payload) {
