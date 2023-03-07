@@ -117,26 +117,26 @@ Module.register("MMM-ICA", {
         setTimeout(() => {
           this.getStores();
         },
-  makeStoresRequest: function() {
-    const self = this;
+makeStoresRequest: function() {
+  const self = this;
 
-    const options = {
-      method: "GET",
-      url: `${self.config.apiUrl}/user/stores`,
-      headers: {
-        "AuthenticationTicket": self.authTicket
-      }
-    };
+  const options = {
+    method: "GET",
+    url: `${self.config.apiUrl}/user/stores`,
+    headers: {
+      "AuthenticationTicket": self.authTicket
+    }
+  };
 
-    request(options, function(error, response, body) {
-      if (!error && response.statusCode === 200) {
-        const stores = JSON.parse(body);
-        console.log("Got stores:", stores);
-        self.sendSocketNotification("STORES_RESULT", { stores: stores });
-      } else {
-        console.error(`Error getting stores: ${error}`);
-        self.sendSocketNotification("STORES_RESULT", { error: error });
-      }
-    });
-  }
+  request(options, function(error, response, body) {
+    if (!error && response.statusCode === 200) {
+      const stores = JSON.parse(body);
+      console.log("Got stores:", stores);
+      self.sendSocketNotification("STORES_RESULT", { stores: stores });
+    } else {
+      console.error(`Error getting stores: ${error}`);
+      self.sendSocketNotification("STORES_RESULT", { error: error });
+    }
+  });
+},
 });
