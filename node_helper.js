@@ -1,35 +1,4 @@
-const NodeHelper = require("node_helper");
-const request = require("request");
-
-module.exports = NodeHelper.create({
-  start: function() {
-    console.log(`Starting helper: ${this.name}`);
-  },
-
-  socketNotificationReceived: function(notification, payload) {
-    console.log("Received socket notification:", notification, "with payload:", payload);
-
-    if (notification === "GET_AUTH_TICKET") {
-      this.config = payload;
-      console.log("Retrieving authentication ticket");
-
-      const authHeader = `Basic ${Buffer.from(`${payload.username}:${payload.password}`).toString("base64")}`;
-      const options = {
-        method: "GET",
-        url: `${payload.apiUrl}/login`,
-        headers: {
-          "Authorization": authHeader
-        }
-      };
-
-      this.makeRequest(options);
-    } else if (notification === "GET_CARD_ACCOUNTS" || notification === "GET_MIN_BONUS" || notification === "GET_STORES" || notification === "GET_OFFERS") {
-      const options = payload;
-      this.makeRequest(options, notification);
-    }
-  },
-
-  makeRequest: function(options, notification = "") {
+makeRequest: function(options, notification = "") {
     var self = this;
     request(options, function(error, response, body) {
       if (!error && response.statusCode === 200) {
@@ -53,8 +22,10 @@ module.exports = NodeHelper.create({
             }
           };
 
+          // Retrieve card accounts
           self.makeRequest(cardAccountsOptions, "CARD_ACCOUNTS_RESULT");
 
+          // Retrieve minimum bonus
           if (self.config.settings.apiEndpoints.minbonus) {
             const minBonusOptions = {
               method: "GET",
@@ -66,6 +37,7 @@ module.exports = NodeHelper.create({
             self.makeRequest(minBonusOptions, "MIN_BONUS_RESULT");
           }
 
+          // Retrieve stores
           if (self.config.settings.apiEndpoints.stores) {
             const storesOptions = {
               method: "GET",
@@ -77,6 +49,7 @@ module.exports = NodeHelper.create({
             self.makeRequest(storesOptions, "STORES_RESULT");
           }
 
+          // Retrieve offers
           if (self.config.settings.apiEndpoints.showoffer && self.config.settings.apiEndpoints.offerstoreid) {
             const offersOptions = {
               method: "GET",
@@ -97,4 +70,3 @@ module.exports = NodeHelper.create({
       }
     });
   }
-});
