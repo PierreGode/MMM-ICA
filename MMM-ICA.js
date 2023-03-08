@@ -22,27 +22,17 @@ Module.register("MMM-ICA", {
   },
 
 getDom: function() {
-  const wrapper = document.createElement("div");
-  wrapper.className = "small bright";
+    const wrapper = document.createElement("div");
+    wrapper.className = "small bright";
 
-  if (this.cardAccounts) {
-    if (this.config.settings.Saldo) {
-      const saldoDiv = document.createElement("div");
-      saldoDiv.innerHTML = `Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Available}`;
-      wrapper.appendChild(saldoDiv);
+    if (this.cardAccounts) {
+      wrapper.innerHTML = `Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Available}`;
+    } else {
+      wrapper.innerHTML = "Loading content...";
     }
 
-    if (this.config.settings["Account Name"]) {
-      const accountNameDiv = document.createElement("div");
-      accountNameDiv.innerHTML = `Account Name: ${this.cardAccounts.Cards[0].Accounts[0].AccountName}`;
-      wrapper.appendChild(accountNameDiv);
-    }
-  } else {
-    wrapper.innerHTML = "Loading content...";
-  }
-
-  return wrapper;
-},
+    return wrapper;
+  },
 
   // Override socket notification handler.
   socketNotificationReceived: function(notification, payload) {
