@@ -27,6 +27,7 @@ getDom: function() {
 
     if (this.cardAccounts) {
       wrapper.innerHTML = `Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Available}`;
+      wrapper.innerHTML = `Saldo: ${this.cardAccounts.Cards[0].Accounts[0].AccountName}`;
     } else {
       wrapper.innerHTML = "Loading content...";
     }
