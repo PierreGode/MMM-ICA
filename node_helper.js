@@ -23,9 +23,14 @@ module.exports = NodeHelper.create({
       };
 
       this.makeRequest(options);
+    } else if (notification === "GET_CARD_ACCOUNTS") {
+      const options = payload;
+      this.makeCardAccountsRequest(options);
+    } else if (notification === "GET_FAVORITE_STORES") {
+      const options = payload;
+      this.makeFavoriteStoresRequest(options);
     }
   },
-
   makeRequest: function(options) {
     var self = this;
     request(options, function(error, response, body) {
@@ -50,13 +55,22 @@ module.exports = NodeHelper.create({
         };
 
         self.makeCardAccountsRequest(cardAccountsOptions);
+
+        const favoriteStoresOptions = {
+          method: "GET",
+          url: `${self.config.storeApiUrl}/user/stores`,
+          headers: {
+            "AuthenticationTicket": authTicket
+          }
+        };
+
+        self.makeFavoriteStoresRequest(favoriteStoresOptions);
       } else {
         console.error(`Error getting authentication ticket: ${error}`);
         self.sendSocketNotification("AUTH_TICKET_RESULT", { error: error });
       }
     });
   },
-
   makeCardAccountsRequest: function(options) {
     var self = this;
     request(options, function(error, response, body) {
@@ -64,31 +78,42 @@ module.exports = NodeHelper.create({
         const cardAccounts = JSON.parse(body);
         console.log("Got card accounts:", cardAccounts);
         self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { cardAccounts: cardAccounts });
-        const favoriteStoresOptions = {
-          method: "GET",
-          url: `${self.config.storeApiUrl}/user/stores`,
-          headers: {
-            "AuthenticationTicket": self.authTicket
-          }
-        };
-        self.makeFavoriteStoresRequest(favoriteStoresOptions);
+
+        // Schedule the next call to the card accounts API.
+        setTimeout(() => {
+          self.makeCardAccountsRequest(options);
+        }, self.config.updateInterval);
       } else {
         console.error(`Error getting card accounts: ${error}`);
         self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { error: error });
+
+        // Retry the request after the retry delay.
+        setTimeout(() => {
+          self.makeCardAccountsRequest(options);
+        }, self.config.retryDelay);
       }
     });
   },
-
   makeFavoriteStoresRequest: function(options) {
     var self = this;
     request(options, function(error, response, body) {
-      if (!error && response.statusCode === 200) {
+            if (!error && response.statusCode === 200) {
         const favoriteStores = JSON.parse(body);
         console.log("Got favorite stores:", favoriteStores);
         self.sendSocketNotification("FAVORITE_STORES_RESULT", { favoriteStores: favoriteStores });
+
+        // Schedule the next call to the favorite stores API.
+        setTimeout(() => {
+          self.makeFavoriteStoresRequest(options);
+        }, self.config.updateInterval);
       } else {
         console.error(`Error getting favorite stores: ${error}`);
         self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: error });
+
+        // Retry the request after the retry delay.
+        setTimeout(() => {
+          self.makeFavoriteStoresRequest(options);
+        }, self.config.retryDelay);
       }
     });
   }
