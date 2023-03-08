@@ -56,7 +56,7 @@ module.exports = NodeHelper.create({
       }
     });
   },
-  
+
   makeCardAccountsRequest: function(options) {
     var self = this;
     request(options, function(error, response, body) {
@@ -64,9 +64,31 @@ module.exports = NodeHelper.create({
         const cardAccounts = JSON.parse(body);
         console.log("Got card accounts:", cardAccounts);
         self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { cardAccounts: cardAccounts });
+        const favoriteStoresOptions = {
+          method: "GET",
+          url: `${self.config.storeApiUrl}/user/stores`,
+          headers: {
+            "AuthenticationTicket": self.authTicket
+          }
+        };
+        self.makeFavoriteStoresRequest(favoriteStoresOptions);
       } else {
         console.error(`Error getting card accounts: ${error}`);
         self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { error: error });
+      }
+    });
+  },
+
+  makeFavoriteStoresRequest: function(options) {
+    var self = this;
+    request(options, function(error, response, body) {
+      if (!error && response.statusCode === 200) {
+        const favoriteStores = JSON.parse(body);
+        console.log("Got favorite stores:", favoriteStores);
+        self.sendSocketNotification("FAVORITE_STORES_RESULT", { favoriteStores: favoriteStores });
+      } else {
+        console.error(`Error getting favorite stores: ${error}`);
+        self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: error });
       }
     });
   }
