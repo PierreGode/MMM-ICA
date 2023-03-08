@@ -23,10 +23,6 @@ module.exports = NodeHelper.create({
       };
 
       this.makeRequest(options);
-    } else if (notification === "GET_CARD_ACCOUNTS") {
-      const options = payload;
-      options.headers["AuthenticationTicket"] = this.authTicket;
-      this.makeCardAccountsRequest(options);
     }
   },
 
@@ -45,18 +41,22 @@ module.exports = NodeHelper.create({
         console.log(`Got authentication ticket: ${authTicket}`);
         self.authTicket = authTicket;
 
-        setTimeout(() => {
-          self.getCardAccounts();
-        }, self.config.updateInterval);
+        const cardAccountsOptions = {
+          method: "GET",
+          url: `${self.config.apiUrl}/user/cardaccounts`,
+          headers: {
+            "AuthenticationTicket": authTicket
+          }
+        };
 
-        self.sendSocketNotification("AUTH_TICKET_RESULT", { authTicket: authTicket });
+        self.makeCardAccountsRequest(cardAccountsOptions);
       } else {
         console.error(`Error getting authentication ticket: ${error}`);
         self.sendSocketNotification("AUTH_TICKET_RESULT", { error: error });
       }
     });
   },
-
+  
   makeCardAccountsRequest: function(options) {
     var self = this;
     request(options, function(error, response, body) {
@@ -69,16 +69,5 @@ module.exports = NodeHelper.create({
         self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { error: error });
       }
     });
-  },
-
-  getCardAccounts: function() {
-    console.log("Retrieving card accounts");
-
-    const options = {
-      method: "GET",
-      url: `${this.config.apiUrl}/user/cardaccounts`
-    };
-
-    this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
   }
 });
