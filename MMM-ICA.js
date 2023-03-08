@@ -21,20 +21,28 @@ Module.register("MMM-ICA", {
     this.sendSocketNotification("GET_AUTH_TICKET", this.config);
   },
 
-  getDom: function() {
-    const wrapper = document.createElement("div");
-    wrapper.className = "small bright";
+getDom: function() {
+  const wrapper = document.createElement("div");
+  wrapper.className = "small bright";
 
-    if (this.cardAccounts && this.minBonus) {
-      const balance = this.cardAccounts.Cards[0].Accounts[0].Balance;
-      const bonus = this.minBonus.MinBonus;
-      wrapper.innerHTML = `Saldo: ${balance} | Bonus: ${bonus}`;
-    } else {
-      wrapper.innerHTML = "Loading content...";
+  if (this.cardAccounts) {
+    if (this.config.settings.Saldo) {
+      const saldoDiv = document.createElement("div");
+      saldoDiv.innerHTML = `Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Available}`;
+      wrapper.appendChild(saldoDiv);
     }
 
-    return wrapper;
-  },
+    if (this.config.settings["Account Name"]) {
+      const accountNameDiv = document.createElement("div");
+      accountNameDiv.innerHTML = `Account Name: ${this.cardAccounts.Cards[0].Accounts[0].AccountName}`;
+      wrapper.appendChild(accountNameDiv);
+    }
+  } else {
+    wrapper.innerHTML = "Loading content...";
+  }
+
+  return wrapper;
+},
 
   // Override socket notification handler.
   socketNotificationReceived: function(notification, payload) {
@@ -69,7 +77,6 @@ Module.register("MMM-ICA", {
       // Schedule the first call to the card accounts API.
       setTimeout(() => {
         this.getCardAccounts();
-        this.getMinBonus(); // Call getMinBonus here
       }, this.config.updateInterval);
     } else if (notification === "CARD_ACCOUNTS_RESULT") {
       if (payload.error) {
@@ -97,31 +104,6 @@ Module.register("MMM-ICA", {
       setTimeout(() => {
         this.getCardAccounts();
       }, this.config.updateInterval);
-    } else if (notification === "MIN_BONUS_RESULT") {
-      if (payload.error) {
-        console.error(`Error getting ICA bonus: ${payload.error}`);
-        setTimeout(() => {
-          this.getMinBonus();
-        }, this.config.retryDelay);
-        return;
-      }
-      const minBonus = payload.minBonus;
-      if (!minBonus)
-        console.error("Error: Unable to retrieve ICA bonus.");
-        setTimeout(() => {
-          this.getMinBonus();
-        }, this.config.retryDelay);
-        return;
-      }
-
-      console.log(`Got ICA bonus: ${JSON.stringify(minBonus)}`);
-      this.minBonus = minBonus;
-      this.updateDom();
-
-      // Schedule the next call to the ICA bonus API.
-      setTimeout(() => {
-        this.getMinBonus();
-      }, this.config.updateInterval);
     } else {
       console.warn(`Unknown socket notification received: ${notification}`);
     }
@@ -139,19 +121,5 @@ Module.register("MMM-ICA", {
     };
 
     this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
-  },
-
-  getMinBonus: function() {
-    console.log("Retrieving ICA bonus");
-
-    const options = {
-      method: "GET",
-      url: `${this.config.apiUrl}/user/minbonustransaction`,
-      headers: {
-        "AuthenticationTicket": this.authTicket
-      }
-    };
-
-    this.sendSocketNotification("GET_MIN_BONUS", options);
   }
 });
