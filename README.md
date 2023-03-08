@@ -35,15 +35,16 @@ in MagicMirror/config/config.js
   position: "bottom_right",
   header: "ICA",
   config: {
-    username: "",
-    password: "",
+    username: "198002140971",
+    password: "586571",
     apiUrl: "https://handla.api.ica.se/api/",
     storeApiUrl: "https://handla.api.ica.se/api/",
-    updateInterval: 60 * 60 * 1000,
-    retryDelay: 10 * 60 * 1000,
+    updateInterval: 60 * 60 * 1000, // Update every hour.
+    retryDelay: 5 * 60 * 1000, // Retry every 5 minutes if an error occurs.
     settings: {
       Saldo: true,
-      AccountName: false
+      AccountName: false,
+      FavoriteStores: false
     }
   }
 },
