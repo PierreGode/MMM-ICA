@@ -97,24 +97,23 @@ module.exports = NodeHelper.create({
   makeFavoriteStoresRequest: function(options) {
     var self = this;
     request(options, function(error, response, body) {
-            if (!error && response.statusCode === 200) {
-        const favoriteStores = JSON.parse(body);
-        console.log("Got favorite stores:", favoriteStores);
-        self.sendSocketNotification("FAVORITE_STORES_RESULT", { favoriteStores: favoriteStores });
+      if (!error && response.statusCode === 200) {
+              const favoriteStores = JSON.parse(body).FavoriteStores;
+      console.log("Got favorite stores:", favoriteStores);
+      self.sendSocketNotification("FAVORITE_STORES_RESULT", { favoriteStores: favoriteStores });
 
-        // Schedule the next call to the favorite stores API.
-        setTimeout(() => {
-          self.makeFavoriteStoresRequest(options);
-        }, self.config.updateInterval);
-      } else {
-        console.error(`Error getting favorite stores: ${error}`);
-        self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: error });
+      // Schedule the next call to the favorite stores API.
+      setTimeout(() => {
+        self.makeFavoriteStoresRequest(options);
+      }, self.config.updateInterval);
+    } else {
+      console.error(`Error getting favorite stores: ${error}`);
+      self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: error });
 
-        // Retry the request after the retry delay.
-        setTimeout(() => {
-          self.makeFavoriteStoresRequest(options);
-        }, self.config.retryDelay);
-      }
-    });
+      // Retry the request after the retry delay.
+      setTimeout(() => {
+        self.makeFavoriteStoresRequest(options);
+      }, self.config.retryDelay);
+    }
   }
 });
