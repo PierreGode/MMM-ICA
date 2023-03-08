@@ -61,67 +61,59 @@ Module.register("MMM-ICA", {
 
     return wrapper;
   },
-  getFavoriteStores: function() {
-    console.log("Retrieving favorite stores");
+getFavoriteStores: function() {
+  console.log("Retrieving favorite stores");
 
-    const options = {
-      method: "GET",
-      url: `${this.config.apiUrl}/user/stores`,
-      headers: {
-        "AuthenticationTicket": this.authTicket
-      }
-    };
+  const options = {
+    method: "GET",
+    url: `${this.config.storeApiUrl}/user/stores`,
+    headers: {
+      "AuthenticationTicket": this.authTicket
+    }
+  };
 
-    this.sendSocketNotification("GET_FAVORITE_STORES", options);
-  },
+  this.sendSocketNotification("GET_FAVORITE_STORES", options);
+},
 
-  // Override socket notification handler.
-  socketNotificationReceived: function(notification, payload) {
-    console.log("Received socket notification:", notification, "with payload:", payload);
+// Override socket notification handler.
+socketNotificationReceived: function(notification, payload) {
+  console.log("Received socket notification:", notification, "with payload:", payload);
 
-    if (notification === "AUTH_TICKET_RESULT") {
-      if (payload.error) {
-        console.error(`Error getting authentication ticket: ${payload.error}`);
-        this.authTicket = "";
-        this.updateDom();
-        setTimeout(() => {
-          this.sendSocketNotification("GET_AUTH_TICKET", this.config);
-        }, this.config.retryDelay);
-        return;
-      }
-
-      const authTicket = payload.authTicket;
-      if (!authTicket) {
-        console.error("Error: Unable to retrieve authentication ticket.");
-        this.authTicket = "";
-        this.updateDom();
-        setTimeout(() => {
-          this.sendSocketNotification("GET_AUTH_TICKET", this.config);
-        }, this.config.retryDelay);
-        return;
-      }
-
-      console.log(`Got authentication ticket: ${authTicket}`);
-      this.authTicket = authTicket;
-      this.updateDom();
-
-      // Schedule the first call to the card accounts API.
-      setTimeout(() => {
-        this.getCardAccounts();
-      }, this.config.updateInterval);
-
-      // Schedule the first call to the favorite stores API.
+  if (notification === "AUTH_TICKET_RESULT") {
+    // ...
+  } else if (notification === "CARD_ACCOUNTS_RESULT") {
+    // ...
+  } else if (notification === "FAVORITE_STORES_RESULT") {
+    if (payload.error) {
+      console.error(`Error getting favorite stores: ${payload.error}`);
       setTimeout(() => {
         this.getFavoriteStores();
-      }, this.config.updateInterval);
-    } else if (notification === "CARD_ACCOUNTS_RESULT") {
-      if (payload.error) {
-        console.error(`Error getting card accounts: ${payload.error}`);
-        setTimeout(() => {
-          this.getCardAccounts();
-        }, this.config.retryDelay);
-        return;
-      }
+      }, this.config.retryDelay);
+      return;
+    }
+
+    const favoriteStores = payload.favoriteStores;
+    if (!favoriteStores) {
+      console.error("Error: Unable to retrieve favorite stores.");
+      setTimeout(() => {
+        this.getFavoriteStores();
+      }, this.config.retryDelay);
+      return;
+    }
+
+    console.log(`Got favorite stores: ${JSON.stringify(favoriteStores)}`);
+    const formattedStores = favoriteStores.map(store => `Store ID: ${store}`).join(", ");
+    this.favoriteStores = formattedStores;
+    this.updateDom();
+
+    // Schedule the next call to the favorite stores API.
+    setTimeout(() => {
+      this.getFavoriteStores();
+    }, this.config.updateInterval);
+  } else {
+    console.warn(`Unknown socket notification received: ${notification}`);
+  }
+}
 
       const cardAccounts = payload.cardAccounts;
       if (!cardAccounts) {
