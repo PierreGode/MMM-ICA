@@ -2,8 +2,8 @@ Module.register("MMM-ICA", {
   defaults: {
     username: "",
     password: "",
-    apiUrl: "https://handla.api.ica.se/api/",
-    storeApiUrl: "https://handla.api.ica.se/api/",
+    apiUrl: "",
+    storeApiUrl: "",
     updateInterval: 60 * 60 * 1000, // Update every hour.
     retryDelay: 5 * 60 * 1000, // Retry every 5 minutes if an error occurs.
     settings: {
@@ -61,30 +61,12 @@ Module.register("MMM-ICA", {
 
     return wrapper;
   },
-
-  // Override socket notification handler.
-socketNotificationReceived: function(notification, payload) {
-
-  getCardAccounts: function() {
-    console.log("Retrieving card accounts");
-
-    const options = {
-      method: "GET",
-      url: `${this.config.apiUrl}/user/cardaccounts`,
-      headers: {
-        "AuthenticationTicket": this.authTicket
-      }
-    };
-
-    this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
-  },
-
   getFavoriteStores: function() {
     console.log("Retrieving favorite stores");
 
     const options = {
       method: "GET",
-      url: `${this.config.storeApiUrl}/user/stores`,
+      url: `${this.config.apiUrl}/user/stores`,
       headers: {
         "AuthenticationTicket": this.authTicket
       }
@@ -122,6 +104,16 @@ socketNotificationReceived: function(notification, payload) {
       console.log(`Got authentication ticket: ${authTicket}`);
       this.authTicket = authTicket;
       this.updateDom();
+
+      // Schedule the first call to the card accounts API.
+      setTimeout(() => {
+        this.getCardAccounts();
+      }, this.config.updateInterval);
+
+      // Schedule the first call to the favorite stores API.
+      setTimeout(() => {
+        this.getFavoriteStores();
+      }, this.config.updateInterval);
     } else if (notification === "CARD_ACCOUNTS_RESULT") {
       if (payload.error) {
         console.error(`Error getting card accounts: ${payload.error}`);
@@ -169,6 +161,7 @@ socketNotificationReceived: function(notification, payload) {
       console.log(`Got favorite stores: ${JSON.stringify(favoriteStores)}`);
       this.favoriteStores = favoriteStores.map(store => store.StoreName).join(", ");
       this.updateDom();
+
       // Schedule the next call to the favorite stores API.
       setTimeout(() => {
         this.getFavoriteStores();
