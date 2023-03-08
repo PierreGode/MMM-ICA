@@ -1,21 +1,12 @@
-// Module definition.
 Module.register("MMM-ICA", {
-  // Default module config.
   defaults: {
     username: "",
     password: "",
     apiUrl: "",
-    storeApiUrl: "",
     updateInterval: 60 * 60 * 1000, // Update every hour.
-    retryDelay: 5 * 60 * 1000, // Retry every 5 minutes if an error occurs.
-    settings: {
-      Saldo: true,
-      AccountName: true,
-      FavoriteStores: true
-    }
+    retryDelay: 5 * 60 * 1000 // Retry every 5 minutes if an error occurs.
   },
 
-  // Start method. Called by MagicMirror when module is started.
   start: function() {
     console.log("Module config:", this.config);
     Log.info(`Starting module: ${this.name}`);
@@ -27,45 +18,31 @@ Module.register("MMM-ICA", {
       return;
     }
 
-    // Get the authentication ticket.
     this.sendSocketNotification("GET_AUTH_TICKET", this.config);
   },
 
-  // Get DOM elements for displaying content.
-  getDom: function() {
-    const wrapper = document.createElement("div");
-    wrapper.className = "small bright";
+getDom: function() {
+  const wrapper = document.createElement("div");
+  wrapper.className = "small bright";
 
-    if (this.cardAccounts) {
-      if (this.config.settings.Saldo) {
-        const saldoDiv = document.createElement("div");
-        saldoDiv.innerHTML = `Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Available}`;
-        wrapper.appendChild(saldoDiv);
-      }
-
-      if (this.config.settings.AccountName) {
-        const accountNameDiv = document.createElement("div");
-        accountNameDiv.innerHTML = `Account Name: ${this.cardAccounts.Cards[0].Accounts[0].AccountName}`;
-        wrapper.appendChild(accountNameDiv);
-      }
-
-      if (this.config.settings.FavoriteStores) {
-        if (this.favoriteStores) {
-          const favoriteStoresDiv = document.createElement("div");
-          favoriteStoresDiv.innerHTML = `Favorite Stores: ${this.favoriteStores}`;
-          wrapper.appendChild(favoriteStoresDiv);
-        } else {
-          const favoriteStoresDiv = document.createElement("div");
-          favoriteStoresDiv.innerHTML = "Loading favorite stores...";
-          wrapper.appendChild(favoriteStoresDiv);
-        }
-      }
-    } else {
-      wrapper.innerHTML = "Loading content...";
+  if (this.cardAccounts) {
+    if (this.config.settings.Saldo) {
+      const saldoDiv = document.createElement("div");
+      saldoDiv.innerHTML = `Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Available}`;
+      wrapper.appendChild(saldoDiv);
     }
 
-    return wrapper;
-  },
+  if (this.config.settings.AccountName) {
+    const accountNameDiv = document.createElement("div");
+    accountNameDiv.innerHTML = `Account Name: ${this.cardAccounts.Cards[0].Accounts[0].AccountName}`;
+    wrapper.appendChild(accountNameDiv);
+  }
+  } else {
+    wrapper.innerHTML = "Loading content...";
+  }
+
+  return wrapper;
+},
 
   // Override socket notification handler.
   socketNotificationReceived: function(notification, payload) {
@@ -101,37 +78,31 @@ Module.register("MMM-ICA", {
       setTimeout(() => {
         this.getCardAccounts();
       }, this.config.updateInterval);
-
-      // Schedule the first call to the favorite stores API.
-      setTimeout(() => {
-        this.getFavoriteStores();
-      }, this.config.updateInterval);
-    } else if (notification === "CARD_ACCOUNT
-    } else if (notification === "FAVORITE_STORES_RESULT") {
+    } else if (notification === "CARD_ACCOUNTS_RESULT") {
       if (payload.error) {
-        console.error(`Error getting favorite stores: ${payload.error}`);
+        console.error(`Error getting card accounts: ${payload.error}`);
         setTimeout(() => {
-          this.getFavoriteStores();
+          this.getCardAccounts();
         }, this.config.retryDelay);
         return;
       }
 
-      const favoriteStores = payload.favoriteStores;
-      if (!favoriteStores) {
-        console.error("Error: Unable to retrieve favorite stores.");
+      const cardAccounts = payload.cardAccounts;
+      if (!cardAccounts) {
+        console.error("Error: Unable to retrieve card accounts.");
         setTimeout(() => {
-          this.getFavoriteStores();
+          this.getCardAccounts();
         }, this.config.retryDelay);
         return;
       }
 
-      console.log(`Got favorite stores: ${JSON.stringify(favoriteStores)}`);
-      this.favoriteStores = favoriteStores.map(store => store.StoreName).join(", ");
+      console.log(`Got card accounts: ${JSON.stringify(cardAccounts)}`);
+      this.cardAccounts = cardAccounts;
       this.updateDom();
 
-      // Schedule the next call to the favorite stores API.
+      // Schedule the next call to the card accounts API.
       setTimeout(() => {
-        this.getFavoriteStores();
+        this.getCardAccounts();
       }, this.config.updateInterval);
     } else {
       console.warn(`Unknown socket notification received: ${notification}`);
@@ -150,22 +121,5 @@ Module.register("MMM-ICA", {
     };
 
     this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
-  },
-
-  getFavoriteStores: function() {
-    console.log("Retrieving favorite stores");
-
-    const options = {
-      method: "POST",
-      url: `${this.config.storeApiUrl}/stores`,
-      headers: {
-        "AuthenticationTicket": this.authTicket
-      },
-      json: {
-        FavoriteStores: [15215, 13418, 11005]
-      }
-    };
-
-    this.sendSocketNotification("GET_FAVORITE_STORES", options);
   }
 });
