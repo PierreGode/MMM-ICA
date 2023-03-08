@@ -113,7 +113,7 @@ socketNotificationReceived: function(notification, payload) {
   } else {
     console.warn(`Unknown socket notification received: ${notification}`);
   }
-}
+},
 
       const cardAccounts = payload.cardAccounts;
       if (!cardAccounts) {
