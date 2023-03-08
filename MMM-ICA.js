@@ -26,7 +26,13 @@ getDom: function() {
     wrapper.className = "small bright";
 
 if (this.cardAccounts) {
-  wrapper.innerHTML = `Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Available} - ${this.cardAccounts.Cards[0].Accounts[0].AccountName}`;
+  const availableDiv = document.createElement("div");
+  availableDiv.innerHTML = `Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Available}`;
+  wrapper.appendChild(availableDiv);
+
+  const accountNameDiv = document.createElement("div");
+  accountNameDiv.innerHTML = `Account Name: ${this.cardAccounts.Cards[0].Accounts[0].AccountName}`;
+  wrapper.appendChild(accountNameDiv);
 } else {
   wrapper.innerHTML = "Loading content...";
 }
