@@ -2,11 +2,11 @@ const NodeHelper = require("node_helper");
 const request = require("request");
 
 module.exports = NodeHelper.create({
-  start: function() {
+  start() {
     console.log(`Starting helper: ${this.name}`);
   },
 
-  socketNotificationReceived: function(notification, payload) {
+  socketNotificationReceived(notification, payload) {
     console.log("Received socket notification:", notification, "with payload:", payload);
 
     if (notification === "GET_AUTH_TICKET") {
@@ -31,8 +31,9 @@ module.exports = NodeHelper.create({
       this.makeFavoriteStoresRequest(options);
     }
   },
-  makeRequest: function(options) {
-    var self = this;
+
+  makeRequest(options) {
+    const self = this;
     request(options, function(error, response, body) {
       if (!error && response.statusCode === 200) {
         const authTicket = response.headers["authenticationticket"];
@@ -71,8 +72,9 @@ module.exports = NodeHelper.create({
       }
     });
   },
-  makeCardAccountsRequest: function(options) {
-    var self = this;
+
+  makeCardAccountsRequest(options) {
+    const self = this;
     request(options, function(error, response, body) {
       if (!error && response.statusCode === 200) {
         const cardAccounts = JSON.parse(body);
@@ -94,8 +96,9 @@ module.exports = NodeHelper.create({
       }
     });
   },
-  makeFavoriteStoresRequest: function(options) {
-    var self = this;
+
+  makeFavoriteStoresRequest(options) {
+    const self = this;
     request(options, function(error, response, body) {
       if (!error && response.statusCode === 200) {
         const favoriteStores = JSON.parse(body).FavoriteStores;
@@ -103,17 +106,27 @@ module.exports = NodeHelper.create({
         self.sendSocketNotification("FAVORITE_STORES_RESULT", { favoriteStores: favoriteStores });
 
         // Schedule the next call to the favorite stores API.
-        setTimeout(() => {
-          self.makeFavoriteStoresRequest(options);
-        }, self.config.updateInterval);
-      } else {
-        console.error(`Error getting favorite stores: ${error}`);
-        self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: error });
+        setTimeout
+makeFavoriteStoresRequest: function(options) {
+var self = this;
+request(options, function(error, response, body) {
+if (!error && response.statusCode === 200) {
+const favoriteStores = JSON.parse(body).FavoriteStores;
+console.log("Got favorite stores:", favoriteStores);
+self.sendSocketNotification("FAVORITE_STORES_RESULT", { favoriteStores: favoriteStores });
+      // Schedule the next call to the favorite stores API.
+    setTimeout(() => {
+      self.makeFavoriteStoresRequest(options);
+    }, self.config.updateInterval);
+  } else {
+    console.error(`Error getting favorite stores: ${error}`);
+    self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: error });
 
-        // Retry the request after the retry delay.
-        setTimeout(() => {
-          self.makeFavoriteStoresRequest(options);
-        }, self.config.retryDelay);
-      }
-    });
+    // Retry the request after the retry delay.
+    setTimeout(() => {
+      self.makeFavoriteStoresRequest(options);
+    }, self.config.retryDelay);
   }
+});
+}
+});
