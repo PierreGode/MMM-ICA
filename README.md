@@ -8,8 +8,8 @@
 
 
 
-THIS JUST STARTED AND IS MISSING 99% OF FUNCTIONS
-Ittiration 1: shows balance
+THIS JUST STARTED AND IS MISSING 80% OF FUNCTIONS
+Ittiration 3: shows balance, Account name, Favorite stores ID
 
 ![saldo](https://user-images.githubusercontent.com/8579922/223672603-f17baa02-02f9-424a-ab85-51cec0817792.png)
 
