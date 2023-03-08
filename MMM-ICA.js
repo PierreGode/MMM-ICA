@@ -45,10 +45,11 @@ Module.register("MMM-ICA", {
       }
 
       if (this.config.settings.FavoriteStores && this.favoriteStores) {
-        const favoriteStoresDiv = document.createElement("div");
-        favoriteStoresDiv.innerHTML = `Favorite Stores: ${this.favoriteStores}`;
-        wrapper.appendChild(favoriteStoresDiv);
+      const favoriteStoresDiv = document.createElement("div");
+      favoriteStoresDiv.innerHTML = `Favorite Stores: ${JSON.stringify(this.favoriteStores)}`;
+      wrapper.appendChild(favoriteStoresDiv);
       }
+
     } else {
       wrapper.innerHTML = "Loading content...";
     }
