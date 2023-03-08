@@ -1,5 +1,3 @@
-// In MMM-ICA.js
-
 Module.register("MMM-ICA", {
   defaults: {
     username: "",
