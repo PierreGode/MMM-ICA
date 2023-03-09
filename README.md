@@ -58,3 +58,8 @@ API reference
 For more information on the ICA API, see the ica-api repository. https://github.com/svendahlstrand/ica-api 
 
 Big thanks to svendahlstrand for the API source.
+
+The page for Magic Mirror. https://magicmirror.builders/
+You can find this module and many more in 3rd Party Modules on the Magic Mirror page
+https://github.com/MichMich/MagicMirror/wiki/3rd-party-modules
+
