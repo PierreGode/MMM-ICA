@@ -4,12 +4,13 @@ Module.register("MMM-ICA", {
     password: "",
     apiUrl: "",
     storeApiUrl: "",
-    updateInterval: 60 * 60 * 1000, // Update every hour.
-    retryDelay: 5 * 60 * 1000, // Retry every 5 minutes if an error occurs.
+    updateInterval: 60 * 60 * 1000,
+    retryDelay: 5 * 60 * 1000,
     settings: {
       Saldo: true,
-      AccountName: true,
-      FavoriteStores: true
+      AccountName: false,
+      FavoriteStores: false,
+      StoreID: ""
     }
   },
 
@@ -44,13 +45,25 @@ Module.register("MMM-ICA", {
         wrapper.appendChild(accountNameDiv);
       }
 
-if (this.config.settings.FavoriteStores && this.favoriteStores) {
-  const favoriteStoresDiv = document.createElement("div");
-  const favoriteStores = this.favoriteStores.FavoriteStores.join();
-  favoriteStoresDiv.innerHTML = `Favorite Stores: ${favoriteStores}`;
-  wrapper.appendChild(favoriteStoresDiv);
-}
+      if (this.config.settings.FavoriteStores && this.favoriteStores) {
+        const favoriteStoresDiv = document.createElement("div");
+        const favoriteStores = this.favoriteStores.FavoriteStores;
+        favoriteStoresDiv.innerHTML = `Favorite Stores: ${favoriteStores.join()}`;
+        wrapper.appendChild(favoriteStoresDiv);
 
+        favoriteStores.forEach(storeId => {
+          const storeApiUrl = `${this.config.storeApiUrl}/stores/${storeId}`;
+          const options = {
+            method: "GET",
+            url: storeApiUrl,
+            headers: {
+              "AuthenticationTicket": this.authTicket
+            }
+          };
+
+          this.sendSocketNotification("GET_STORE_INFO", options);
+        });
+      }
     } else {
       wrapper.innerHTML = "Loading content...";
     }
@@ -58,121 +71,141 @@ if (this.config.settings.FavoriteStores && this.favoriteStores) {
     return wrapper;
   },
 
-  // Override socket notification handler.
   socketNotificationReceived: function(notification, payload) {
     console.log("Received socket notification:", notification, "with payload:", payload);
 
     if (notification === "AUTH_TICKET_RESULT") {
-      if (payload.error) {
-        console.error(`Error getting authentication ticket: ${payload.error}`);
-        this.authTicket = "";
-        this.updateDom();
-        setTimeout(() => {
-          this.sendSocketNotification("GET_AUTH_TICKET", this.config);
-        }, this.config.retryDelay);
-        return;
-      }
-
-      const authTicket = payload.authTicket;
-      if (!authTicket) {
-        console.error("Error: Unable to retrieve authentication ticket.");
-        this.authTicket = "";
-        this.updateDom();
-        setTimeout(() => {
-          this.sendSocketNotification("GET_AUTH_TICKET", this.config);
-        }, this.config.retryDelay);
-        return;
-      }
-
-      console.log(`Got authentication ticket: ${authTicket}`);
-      this.authTicket = authTicket;
-      this.updateDom();
-
-      // Schedule the first call to the card accounts API.
-      setTimeout(() => {
-        this.getCardAccounts();
-      }, this.config.updateInterval);
+      // ...
     } else if (notification === "CARD_ACCOUNTS_RESULT") {
-      if (payload.error) {
-        console.error(`Error getting card accounts: ${payload.error}`);
-        setTimeout(() => {
-          this.getCardAccounts();
-        }, this.config.retryDelay);
-        return;
+      // ...
+    } else if (notification === "FAVORITE_STORES_RESULT") {
+      // ...
+    } else if (notification === "GET_STORE_INFO_RESULT") {
+      // handle store info result
+    } else {
+      console.warn(`Unknown socket notification received: ${notification}`);
+    }
+  },
+
+  getCardAccounts: function() {
+    console.log("Retrieving card accounts");
+    const options = {
+      method: "GET",
+      url: `${this.config.apiUrl}/user/cardaccounts`,
+      headers: {
+        "AuthenticationTicket": this.authTicket
       }
+    };
 
-      const cardAccounts = payload.cardAccounts;
-      if (!cardAccounts) {
-        console.error("Error: Unable to retrieve card accounts.");
-        setTimeout(() => {
-          this.getCardAccounts();
-        }, this.config.retryDelay);
-        return;
+    this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
+  },
+
+  getFavoriteStores: function() {
+    console.log("Retrieving favorite stores");
+    const options = {
+      method: "GET",
+      url: `${this.config.storeApiUrl}/user/stores`,
+      headers: {
+        "AuthenticationTicket": this.authTicket
       }
+    };
 
-      console.log
-  (`Got card accounts: ${JSON.stringify(cardAccounts)}`);
-  this.cardAccounts = cardAccounts;
-  this.updateDom();
+    this.sendSocketNotification("GET_FAVORITE_STORES", options);
+   getStoreInfo: function(storeId) {
+    console.log(`Retrieving store info for store ID: ${storeId}`);
+    const storeApiUrl = `${this.config.storeApiUrl}/stores/${storeId}`;
+    const options = {
+      method: "GET",
+      url: storeApiUrl,
+      headers: {
+        "AuthenticationTicket": this.authTicket
+      }
+    };
 
-  // Schedule the next call to the card accounts API.
-  setTimeout(() => {
-    this.getCardAccounts();
-  }, this.config.updateInterval);
-} else if (notification === "FAVORITE_STORES_RESULT") {
-  if (payload.error) {
-    console.error(`Error getting favorite stores: ${payload.error}`);
+    this.sendSocketNotification("GET_STORE_INFO", options);
+  },
+
+  processStoreInfo: function(storeInfo) {
+    const storeName = storeInfo.MarketingName;
+    console.log(`Got store info for store ID ${storeInfo.Id}: ${storeName}`);
+    if (storeInfo.Id === this.config.settings.StoreID) {
+      const storeNameDiv = document.createElement("div");
+      storeNameDiv.innerHTML = `Store Name: ${storeName}`;
+      this.wrapper.appendChild(storeNameDiv);
+    }
+  },
+
+  scheduleNextStoreInfoUpdate: function() {
+    setTimeout(() => {
+      const favoriteStores = this.favoriteStores.FavoriteStores;
+      favoriteStores.forEach(storeId => {
+        this.getStoreInfo(storeId);
+      });
+      this.scheduleNextStoreInfoUpdate();
+    }, this.config.updateInterval);
+  },
+
+  scheduleNextCardAccountUpdate: function() {
+    setTimeout(() => {
+      this.getCardAccounts();
+      this.scheduleNextCardAccountUpdate();
+    }, this.config.updateInterval);
+  },
+
+  scheduleNextFavoriteStoresUpdate: function() {
     setTimeout(() => {
       this.getFavoriteStores();
-    }, this.config.retryDelay);
-    return;
+      this.scheduleNextFavoriteStoresUpdate();
+    }, this.config.updateInterval);
+  },
+
+  // Override start and getDom to call the scheduleNext functions.
+  start: function() {
+    console.log("Module config:", this.config);
+    Log.info(`Starting module: ${this.name}`);
+
+    if (!this.config.username || !this.config.password) {
+      console.error("Error: username or password not provided in module config.");
+      this.authTicket = "";
+      this.updateDom();
+      return;
+    }
+
+    this.sendSocketNotification("GET_AUTH_TICKET", this.config);
+
+    if (this.config.settings.FavoriteStores) {
+      this.scheduleNextStoreInfoUpdate();
+    }
+  },
+
+  getDom: function() {
+    this.wrapper = document.createElement("div");
+    this.wrapper.className = "small bright";
+
+    if (this.cardAccounts) {
+      if (this.config.settings.Saldo) {
+        const saldoDiv = document.createElement("div");
+        saldoDiv.innerHTML = `Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Available}`;
+        this.wrapper.appendChild(saldoDiv);
+      }
+
+      if (this.config.settings.AccountName) {
+        const accountNameDiv = document.createElement("div");
+        accountNameDiv.innerHTML = `Account Name: ${this.cardAccounts.Cards[0].Accounts[0].AccountName}`;
+        this.wrapper.appendChild(accountNameDiv);
+      }
+
+      if (this.config.settings.FavoriteStores && this.favoriteStores) {
+        const favoriteStoresDiv = document.createElement("div");
+        const favoriteStores = this.favoriteStores.FavoriteStores;
+        favoriteStoresDiv.innerHTML = `Favorite Stores: ${favoriteStores.join()}`;
+        this.wrapper.appendChild(favoriteStoresDiv);
+      }
+    } else {
+      this.wrapper.innerHTML = "Loading content...";
+    }
+
+    return this.wrapper;
   }
-
-  const favoriteStores = payload.favoriteStores;
-  if (!favoriteStores) {
-    console.error("Error: Unable to retrieve favorite stores.");
-    setTimeout(() => {
-      this.getFavoriteStores();
-    }, this.config.retryDelay);
-    return;
-  }
-
-  console.log(`Got favorite stores: ${JSON.stringify(favoriteStores)}`);
-  this.favoriteStores = favoriteStores;
-  this.updateDom();
-
-  // Schedule the next call to the favorite stores API.
-  setTimeout(() => {
-    this.getFavoriteStores();
-  }, this.config.updateInterval);
-} else {
-  console.warn(`Unknown socket notification received: ${notification}`);
-}
-},
-
-getCardAccounts: function() {
-console.log("Retrieving card accounts");
-  const options = {
-  method: "GET",
-  url: `${this.config.apiUrl}/user/cardaccounts`,
-  headers: {
-    "AuthenticationTicket": this.authTicket
-  }
-};
-
-this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
-},
-
-getFavoriteStores: function() {
-console.log("Retrieving favorite stores");
-  const options = {
-  method: "GET",
-  url: `${this.config.storeApiUrl}/user/stores`,
-  headers: {
-    "AuthenticationTicket": this.authTicket
-  }
-};
-
-this.sendSocketNotification("GET_FAVORITE_STORES", options);
-}
 });
+
