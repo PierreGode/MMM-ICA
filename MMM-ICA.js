@@ -27,44 +27,37 @@ Module.register("MMM-ICA", {
     this.sendSocketNotification("GET_AUTH_TICKET", this.config);
   },
 
-getDom: function() {
-  const wrapper = document.createElement("div");
-  wrapper.className = "small bright";
+  getDom: function() {
+    const wrapper = document.createElement("div");
+    wrapper.className = "small bright";
 
-  if (this.cardAccounts) {
-    // ...
+    if (this.cardAccounts) {
+      if (this.config.settings.Saldo) {
+        const saldoDiv = document.createElement("div");
+        saldoDiv.innerHTML = `Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Available}`;
+        wrapper.appendChild(saldoDiv);
+      }
 
-    if (this.config.settings.StoreID) {
-      const storeId = this.config.settings.StoreID;
-      const storeUrl = `${this.config.apiUrl}/stores/${storeId}`;
+      if (this.config.settings.AccountName) {
+        const accountNameDiv = document.createElement("div");
+        accountNameDiv.innerHTML = `Account Name: ${this.cardAccounts.Cards[0].Accounts[0].AccountName}`;
+        wrapper.appendChild(accountNameDiv);
+      }
 
-      const storeRequest = new XMLHttpRequest();
-      storeRequest.onreadystatechange = function() {
-        if (this.readyState == 4) {
-          if (this.status == 200) {
-            const store = JSON.parse(this.responseText);
-            console.log("Got store:", store);
-            const storeNameDiv = document.createElement("div");
-            storeNameDiv.innerHTML = `Store Name: ${store.MarketingName}`;
-            wrapper.appendChild(storeNameDiv);
-          } else {
-            console.error(`Error getting store: ${this.statusText}`);
-            const errorDiv = document.createElement("div");
-            errorDiv.innerHTML = "Error retrieving store information.";
-            wrapper.appendChild(errorDiv);
-          }
-        }
-      };
-      storeRequest.open("GET", storeUrl, true);
-      storeRequest.setRequestHeader("AuthenticationTicket", this.authTicket);
-      storeRequest.send();
+if (this.config.settings.FavoriteStores && this.favoriteStores) {
+  const favoriteStoresDiv = document.createElement("div");
+  const favoriteStores = this.favoriteStores.FavoriteStores.join();
+  favoriteStoresDiv.innerHTML = `Favorite Stores: ${favoriteStores}`;
+  wrapper.appendChild(favoriteStoresDiv);
+}
+
+    } else {
+      wrapper.innerHTML = "Loading content...";
     }
-  } else {
-    wrapper.innerHTML = "Loading content...";
-  }
 
-  return wrapper;
-},
+    return wrapper;
+  },
+
   // Override socket notification handler.
   socketNotificationReceived: function(notification, payload) {
     console.log("Received socket notification:", notification, "with payload:", payload);
@@ -171,25 +164,19 @@ this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
 },
 
 getFavoriteStores: function() {
-console.log("Retrieving favorite stores");
-  const options = {
-  method: "GET",
-  url: `${this.config.storeApiUrl}/user/stores`,
-  headers: {
-    "AuthenticationTicket": this.authTicket
-  }
-};
-  
- updateStoreInfo: function() {
-  console.log("Retrieving store information");
+  console.log("Retrieving favorite stores");
   const options = {
     method: "GET",
-    url: `${this.config.apiUrl}/stores/${this.config.settings.StoreID}`,
+    url: `${this.config.storeApiUrl}/user/stores`,
     headers: {
       "AuthenticationTicket": this.authTicket
     }
   };
 
-this.sendSocketNotification("GET_FAVORITE_STORES", options);
+  if (this.config.settings.StoreID) {
+    options.url = `${this.config.storeApiUrl}/stores/${this.config.settings.StoreID}`;
+  }
+
+  this.sendSocketNotification("GET_FAVORITE_STORES", options);
 }
 });
