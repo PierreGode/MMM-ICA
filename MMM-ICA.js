@@ -40,12 +40,19 @@ getDom: function() {
 
       const storeRequest = new XMLHttpRequest();
       storeRequest.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-          const store = JSON.parse(this.responseText);
-          console.log("Got store:", store);
-          const storeNameDiv = document.createElement("div");
-          storeNameDiv.innerHTML = `Store Name: ${store.MarketingName}`;
-          wrapper.appendChild(storeNameDiv);
+        if (this.readyState == 4) {
+          if (this.status == 200) {
+            const store = JSON.parse(this.responseText);
+            console.log("Got store:", store);
+            const storeNameDiv = document.createElement("div");
+            storeNameDiv.innerHTML = `Store Name: ${store.MarketingName}`;
+            wrapper.appendChild(storeNameDiv);
+          } else {
+            console.error(`Error getting store: ${this.statusText}`);
+            const errorDiv = document.createElement("div");
+            errorDiv.innerHTML = "Error retrieving store information.";
+            wrapper.appendChild(errorDiv);
+          }
         }
       };
       storeRequest.open("GET", storeUrl, true);
@@ -58,7 +65,6 @@ getDom: function() {
 
   return wrapper;
 },
-
   // Override socket notification handler.
   socketNotificationReceived: function(notification, payload) {
     console.log("Received socket notification:", notification, "with payload:", payload);
