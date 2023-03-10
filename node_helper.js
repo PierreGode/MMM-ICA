@@ -47,16 +47,17 @@ module.exports = NodeHelper.create({
         console.log(`Got authentication ticket: ${authTicket}`);
         self.authTicket = authTicket;
 
+        const cardAccountsOptions = {
+          method: "GET",
+          url: `${self.config.apiUrl}/user/cardaccounts`,
+          headers: {
+            "AuthenticationTicket": authTicket
+          }
+        };
+
         if (self.config.settings.StoreID && self.config.settings.DisplayStoreID) {
           self.getStore();
         } else {
-          const cardAccountsOptions = {
-            method: "GET",
-            url: `${self.config.apiUrl}/user/cardaccounts`,
-            headers: {
-              "AuthenticationTicket": authTicket
-            }
-          };
           self.makeCardAccountsRequest(cardAccountsOptions);
         }
       } else {
@@ -90,7 +91,6 @@ module.exports = NodeHelper.create({
       }
     });
   },
-
   makeFavoriteStoresRequest: function(options) {
     var self = this;
     request(options, function(error, response, body) {
@@ -98,6 +98,19 @@ module.exports = NodeHelper.create({
         const favoriteStores = JSON.parse(body);
         console.log("Got favorite stores:", favoriteStores);
         self.sendSocketNotification("FAVORITE_STORES_RESULT", { favoriteStores: favoriteStores });
+
+        if (self.config.settings.StoreID) {
+          self.getStore();
+        } else {
+          const cardAccountsOptions = {
+            method: "GET",
+            url: `${self.config.apiUrl}/user/cardaccounts`,
+            headers: {
+              "AuthenticationTicket": self.authTicket
+            }
+          };
+          self.makeCardAccountsRequest(cardAccountsOptions);
+        }
       } else {
         console.error(`Error getting favorite stores: ${error}`);
         self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: error });
@@ -107,28 +120,33 @@ module.exports = NodeHelper.create({
 
   getStore: function() {
     var self = this;
+    const storeId = self.config.settings.StoreID;
+    console.log("Retrieving store", storeId);
     const options = {
       method: "GET",
-      url: `${self.config.storeApiUrl}/stores/${self.config.settings.StoreID}`,
+      url: `${self.config.apiUrl}/stores/${storeId}`,
       headers: {
         "AuthenticationTicket": self.authTicket
       }
     };
-    self.makeStoreRequest(options);
-  },
 
-  makeStoreRequest: function(options) {
-    var self = this;
     request(options, function(error, response, body) {
       if (!error && response.statusCode === 200) {
         const store = JSON.parse(body);
         console.log("Got store:", store);
-        self.sendSocketNotification("GET_STORE_RESULT", { store: store });
+        self.sendSocketNotification("STORE_RESULT", { store: store });
+        const cardAccountsOptions = {
+          method: "GET",
+          url: `${self.config.apiUrl}/user/cardaccounts`,
+          headers: {
+            "AuthenticationTicket": self.authTicket
+          }
+        };
+        self.makeCardAccountsRequest(cardAccountsOptions);
       } else {
-        console.error(`Error getting store: ${error}`);
-        self.sendSocketNotification("GET_STORE_RESULT", { error: error });
+        console.error(`Error getting store ${storeId}: ${error}`);
+        self.sendSocketNotification("STORE_RESULT", { error: error });
       }
     });
   }
 });
-
