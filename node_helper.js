@@ -79,17 +79,22 @@ module.exports = NodeHelper.create({
     });
   },
 
-  makeFavoriteStoresRequest: function(options) {
-    var self = this;
-    request(options, function(error, response, body) {
-      if (!error && response.statusCode === 200) {
-        const favoriteStores = JSON.parse(body);
-        console.log("Got favorite stores:", favoriteStores);
-        self.sendSocketNotification("FAVORITE_STORES_RESULT", { favoriteStores: favoriteStores });
+makeFavoriteStoresRequest: function(options) {
+  var self = this;
+  request(options, function(error, response, body) {
+    if (!error && response.statusCode === 200) {
+      let favoriteStores;
+      if (self.config.settings.StoreID) {
+        favoriteStores = JSON.parse(body).Stores[0];
       } else {
-        console.error(`Error getting favorite stores: ${error}`);
-        self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: error });
+        favoriteStores = JSON.parse(body);
       }
-    });
-  }
+      console.log("Got favorite stores:", favoriteStores);
+      self.sendSocketNotification("FAVORITE_STORES_RESULT", { favoriteStores: favoriteStores });
+    } else {
+      console.error(`Error getting favorite stores: ${error}`);
+      self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: error });
+    }
+  });
+}
 });
