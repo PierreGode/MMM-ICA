@@ -153,17 +153,24 @@ Module.register("MMM-ICA", {
   console.warn(`Unknown socket notification received: ${notification}`);
 }
 },
-getCardAccounts: function() {
-console.log("Retrieving card accounts");
+
+ getCardAccounts: function() {
+  console.log("Retrieving card accounts");
   const options = {
-  method: "GET",
-  url: `${this.config.apiUrl}/user/cardaccounts`,
-  headers: {
-    "AuthenticationTicket": this.authTicket
+    method: "GET",
+    url: `${this.config.apiUrl}/user/cardaccounts`,
+    headers: {
+      "AuthenticationTicket": this.authTicket
+    }
+  };
+
+  if (this.config.settings.StoreID && this.config.settings.DisplayStoreID) {
+    this.getStore();
+  } else {
+    this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
   }
-};
-this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
 },
+
  
  handleError: function(error, notification) {
   console.error(`Error: ${error}`);
