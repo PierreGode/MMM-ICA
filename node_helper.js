@@ -78,6 +78,51 @@ module.exports = NodeHelper.create({
       }
     });
   },
+getCardAccounts: function() {
+  console.log("Retrieving card accounts");
+  const options = {
+    method: "GET",
+    url: `${this.config.apiUrl}/user/cardaccounts`,
+    headers: {
+      "AuthenticationTicket": this.authTicket
+    }
+  };
+
+  if (this.config.settings.StoreID && this.config.settings.DisplayStoreID) {
+    const storeOptions = {
+      method: "GET",
+      url: `${this.config.storeApiUrl}/stores/${this.config.settings.StoreID}`,
+      headers: {
+        "AuthenticationTicket": this.authTicket
+      }
+    };
+    this.makeStoreRequest(storeOptions);
+  } else {
+    this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
+  }
+},
+
+makeStoreRequest: function(options) {
+  var self = this;
+  request(options, function(error, response, body) {
+    if (!error && response.statusCode === 200) {
+      const store = JSON.parse(body);
+      console.log("Got store:", store);
+      self.store = store;
+      const cardAccountsOptions = {
+        method: "GET",
+        url: `${self.config.apiUrl}/user/cardaccounts`,
+        headers: {
+          "AuthenticationTicket": self.authTicket
+        }
+      };
+      self.makeCardAccountsRequest(cardAccountsOptions);
+    } else {
+      console.error(`Error getting store: ${error}`);
+      self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { error: error });
+    }
+  });
+},
 
 makeFavoriteStoresRequest: function(options) {
   var self = this;
