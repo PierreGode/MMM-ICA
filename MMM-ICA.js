@@ -43,13 +43,23 @@ Module.register("MMM-ICA", {
         accountNameDiv.innerHTML = `Account Name: ${this.cardAccounts.Cards[0].Accounts[0].AccountName}`;
         wrapper.appendChild(accountNameDiv);
       }
+      
+      if (this.config.settings.StoreID && this.config.settings.DisplayStoreID && this.store) {
+  const storeIDDiv = document.createElement("div");
+  storeIDDiv.innerHTML = `Store ID: ${this.store.ID}`;
+  wrapper.appendChild(storeIDDiv);
 
-if (this.config.settings.FavoriteStores && this.favoriteStores) {
-  const favoriteStoresDiv = document.createElement("div");
-  const favoriteStores = this.favoriteStores.FavoriteStores.join();
-  favoriteStoresDiv.innerHTML = `Favorite Stores: ${favoriteStores}`;
-  wrapper.appendChild(favoriteStoresDiv);
+  const marketingNameDiv = document.createElement("div");
+  marketingNameDiv.innerHTML = `Store Name: ${this.store.MarketingName}`;
+  wrapper.appendChild(marketingNameDiv);
 }
+
+      if (this.config.settings.FavoriteStores && this.favoriteStores) {
+        const favoriteStoresDiv = document.createElement("div");
+        const favoriteStores = this.favoriteStores.FavoriteStores.join();
+        favoriteStoresDiv.innerHTML = `Favorite Stores: ${favoriteStores}`;
+        wrapper.appendChild(favoriteStoresDiv);
+     }
 
     } else {
       wrapper.innerHTML = "Loading content...";
