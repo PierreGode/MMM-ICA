@@ -1,4 +1,40 @@
-makeRequest: function(options) {
+const NodeHelper = require("node_helper");
+const request = require("request");
+
+module.exports = NodeHelper.create({
+  start: function() {
+    console.log(`Starting helper: ${this.name}`);
+  },
+
+  socketNotificationReceived: function(notification, payload) {
+    console.log("Received socket notification:", notification, "with payload:", payload);
+
+    if (notification === "GET_AUTH_TICKET") {
+      this.config = payload;
+      console.log("Retrieving authentication ticket");
+
+      const authHeader = `Basic ${Buffer.from(`${payload.username}:${payload.password}`).toString("base64")}`;
+      const options = {
+        method: "GET",
+        url: `${payload.apiUrl}/login`,
+        headers: {
+          "Authorization": authHeader
+        }
+      };
+
+      this.makeRequest(options);
+    } else if (notification === "GET_CARD_ACCOUNTS") {
+      this.makeCardAccountsRequest(payload);
+    } else if (notification === "GET_FAVORITE_STORES") {
+      this.makeFavoriteStoresRequest(payload);
+    } else if (notification === "GET_STORE_DETAILS") {
+      this.sendSocketNotification("STORE_DETAILS_RESULT", { storeDetails: JSON.parse(payload.body) });
+    } else {
+      console.warn(`Unknown socket notification received: ${notification}`);
+    }
+  },
+
+  makeRequest: function(options) {
     var self = this;
     request(options, function(error, response, body) {
       if (!error && response.statusCode === 200) {
@@ -57,15 +93,16 @@ makeRequest: function(options) {
       if (!error && response.statusCode === 200) {
         const favoriteStores = JSON.parse(body);
         console.log("Got favorite stores:", favoriteStores);
-        self.sendSocketNotification("FAVORITE_STORES_RESULT", { favoriteStores: favoriteStores });
+        self.favoriteStores = favoriteStores;
+        self.processFavoriteStores();
       } else {
         console.error(`Error getting favorite stores: ${error}`);
         self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: error });
       }
     });
-  }
-});
-makeStoreDetailsRequest: function(storeId) {
+  },
+
+  makeStoreDetailsRequest: function(storeId) {
     console.log(`Retrieving store details for storeId: ${storeId}`);
     const options = {
       method: "GET",
