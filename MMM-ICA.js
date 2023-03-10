@@ -172,6 +172,14 @@ console.log("Retrieving card accounts");
 
 this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
 },
+ 
+ handleError: function(error, notification) {
+  console.error(`Error: ${error}`);
+  this.sendSocketNotification(`${notification}_RESULT`, { error: error });
+  setTimeout(() => {
+    this[`get${notification}`]();
+  }, this.config.retryDelay);
+},
 
 getFavoriteStores: function() {
   console.log("Retrieving favorite stores");
