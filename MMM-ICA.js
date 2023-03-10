@@ -114,7 +114,6 @@ socketNotificationReceived: function(notification, payload) {
       console.log(`Got authentication ticket: ${authTicket}`);
       this.authTicket = authTicket;
       this.updateDom();
-
       // Schedule the first call to the card accounts API.
       setTimeout(() => {
         this.getCardAccounts();
@@ -127,7 +126,6 @@ socketNotificationReceived: function(notification, payload) {
         }, this.config.retryDelay);
         return;
       }
-
       const cardAccounts = payload.cardAccounts;
       if (!cardAccounts) {
         console.error("Error: Unable to retrieve card accounts.");
@@ -136,12 +134,10 @@ socketNotificationReceived: function(notification, payload) {
         }, this.config.retryDelay);
         return;
       }
-
       console.log
   (`Got card accounts: ${JSON.stringify(cardAccounts)}`);
   this.cardAccounts = cardAccounts;
   this.updateDom();
-
   // Schedule the next call to the card accounts API.
   setTimeout(() => {
     this.getCardAccounts();
@@ -154,7 +150,6 @@ socketNotificationReceived: function(notification, payload) {
     }, this.config.retryDelay);
     return;
   }
-
   const favoriteStores = payload.favoriteStores;
   if (!favoriteStores) {
     console.error("Error: Unable to retrieve favorite stores.");
@@ -163,11 +158,9 @@ socketNotificationReceived: function(notification, payload) {
     }, this.config.retryDelay);
     return;
   }
-
   console.log(`Got favorite stores: ${JSON.stringify(favoriteStores)}`);
   this.favoriteStores = favoriteStores;
   this.updateDom();
-
   // Schedule the next call to the favorite stores API.
   setTimeout(() => {
     this.getFavoriteStores();
@@ -176,7 +169,6 @@ socketNotificationReceived: function(notification, payload) {
   console.warn(`Unknown socket notification received: ${notification}`);
 }
 },
-
 getCardAccounts: function() {
 console.log("Retrieving card accounts");
   const options = {
@@ -186,7 +178,6 @@ console.log("Retrieving card accounts");
     "AuthenticationTicket": this.authTicket
   }
 };
-
 this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
 },
  
@@ -197,7 +188,6 @@ this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
     this[`get${notification}`]();
   }, this.config.retryDelay);
 },
-
 getFavoriteStores: function() {
   console.log("Retrieving favorite stores");
   const options = {
@@ -207,7 +197,6 @@ getFavoriteStores: function() {
       "AuthenticationTicket": this.authTicket
     }
   };
-
   if (this.config.settings.StoreID) {
     options.url = `${this.config.storeApiUrl}/stores/${this.config.settings.StoreID}`;
   }
