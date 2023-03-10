@@ -78,6 +78,20 @@ module.exports = NodeHelper.create({
       }
     });
   },
+  
+  makeStoreRequest: function(options) {
+  var self = this;
+  request(options, function(error, response, body) {
+    if (!error && response.statusCode === 200) {
+      const store = JSON.parse(body);
+      console.log("Got store:", store);
+      self.sendSocketNotification("GET_STORE_RESULT", { store: store });
+      } else {
+        console.error(`Error getting favorite stores: ${error}`);
+        self.sendSocketNotification("GET_STORE_RESULT", { error: error });
+              }
+    });
+  },
 
   makeFavoriteStoresRequest: function(options) {
     var self = this;
