@@ -44,12 +44,12 @@ Module.register("MMM-ICA", {
         wrapper.appendChild(accountNameDiv);
       }
 
-if (this.config.settings.FavoriteStores && this.favoriteStores) {
-  const favoriteStoresDiv = document.createElement("div");
-  const favoriteStores = this.favoriteStores.FavoriteStores.join();
-  favoriteStoresDiv.innerHTML = `Favorite Stores: ${favoriteStores}`;
-  wrapper.appendChild(favoriteStoresDiv);
-}
+      if (this.config.settings.FavoriteStores && this.favoriteStores) {
+        const favoriteStoresDiv = document.createElement("div");
+        const favoriteStores = this.favoriteStores.FavoriteStores.join();
+        favoriteStoresDiv.innerHTML = `Favorite Stores: ${favoriteStores}`;
+        wrapper.appendChild(favoriteStoresDiv);
+      }
 
     } else {
       wrapper.innerHTML = "Loading content...";
@@ -106,12 +106,11 @@ if (this.config.settings.FavoriteStores && this.favoriteStores) {
         console.error("Error: Unable to retrieve card accounts.");
         setTimeout(() => {
           this.getCardAccounts();
-        }, this.config.retryDelay);
-        return;
-      }
+           }, this.config.retryDelay);
+    return;
+  }
 
-      console.log
-  (`Got card accounts: ${JSON.stringify(cardAccounts)}`);
+  console.log(`Got card accounts: ${JSON.stringify(cardAccounts)}`);
   this.cardAccounts = cardAccounts;
   this.updateDom();
 
@@ -152,27 +151,25 @@ if (this.config.settings.FavoriteStores && this.favoriteStores) {
 
 getCardAccounts: function() {
 console.log("Retrieving card accounts");
-  const options = {
-  method: "GET",
-  url: `${this.config.apiUrl}/user/cardaccounts`,
-  headers: {
-    "AuthenticationTicket": this.authTicket
-  }
+const options = {
+method: "GET",
+url: ${this.config.apiUrl}/user/cardaccounts,
+headers: {
+"AuthenticationTicket": this.authTicket
+}
 };
-
-this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
+  this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
 },
 
 getFavoriteStores: function() {
 console.log("Retrieving favorite stores");
-  const options = {
-  method: "GET",
-  url: `${this.config.storeApiUrl}/user/stores`,
-  headers: {
-    "AuthenticationTicket": this.authTicket
-  }
+const options = {
+method: "GET",
+url: ${this.config.storeApiUrl}/user/stores,
+headers: {
+"AuthenticationTicket": this.authTicket
+}
 };
-
 this.sendSocketNotification("GET_FAVORITE_STORES", options);
 }
 });
