@@ -172,6 +172,19 @@ this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
     this[`get${notification}`]();
   }, this.config.retryDelay);
 },
+  
+  getStore: function() {
+  console.log("Retrieving store information");
+  const options = {
+    method: "GET",
+    url: `${this.config.storeApiUrl}/stores/${this.config.settings.StoreID}`,
+    headers: {
+      "AuthenticationTicket": this.authTicket
+    }
+  };
+  this.sendSocketNotification("GET_STORE", options);
+},
+  
 getFavoriteStores: function() {
   console.log("Retrieving favorite stores");
   const options = {
