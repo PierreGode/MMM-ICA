@@ -6,25 +6,19 @@ module.exports = NodeHelper.create({
     console.log(`Starting helper: ${this.name}`);
   },
 
-  socketNotificationReceived: function(notification, payload) {
-    console.log("Received socket notification:", notification, "with payload:", payload);
+ socketNotificationReceived: function(notification, payload) {
+  console.log("Received socket notification:", notification, "with payload:", payload);
 
-    if (notification === "GET_AUTH_TICKET") {
-      this.config = payload;
-      console.log("Retrieving authentication ticket");
-
-      const authHeader = `Basic ${Buffer.from(`${payload.username}:${payload.password}`).toString("base64")}`;
-      const options = {
-        method: "GET",
-        url: `${payload.apiUrl}/login`,
-        headers: {
-          "Authorization": authHeader
-        }
-      };
-
-      this.makeRequest(options);
-    }
-  },
+  if (notification === "GET_AUTH_TICKET") {
+    // ...
+  } else if (notification === "GET_CARD_ACCOUNTS") {
+    // ...
+  } else if (notification === "GET_FAVORITE_STORES") {
+    // ...
+  } else if (notification === "GET_STORE") {
+    this.makeStoreRequest(payload);
+  }
+},
 
   makeRequest: function(options) {
     var self = this;
