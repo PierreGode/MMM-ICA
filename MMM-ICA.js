@@ -173,6 +173,16 @@ console.log("Retrieving favorite stores");
     "AuthenticationTicket": this.authTicket
   }
 };
+  
+ updateStoreInfo: function() {
+  console.log("Retrieving store information");
+  const options = {
+    method: "GET",
+    url: `${this.config.apiUrl}/stores/${this.config.settings.StoreID}`,
+    headers: {
+      "AuthenticationTicket": this.authTicket
+    }
+  };
 
 this.sendSocketNotification("GET_FAVORITE_STORES", options);
 }
