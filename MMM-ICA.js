@@ -69,19 +69,36 @@ Module.register("MMM-ICA", {
   },
 
   // Override socket notification handler.
-  socketNotificationReceived: function(notification, payload) {
-    console.log("Received socket notification:", notification, "with payload:", payload);
+socketNotificationReceived: function(notification, payload) {
+  console.log("Received socket notification:", notification, "with payload:", payload);
 
-    if (notification === "AUTH_TICKET_RESULT") {
-      if (payload.error) {
-        console.error(`Error getting authentication ticket: ${payload.error}`);
-        this.authTicket = "";
-        this.updateDom();
-        setTimeout(() => {
-          this.sendSocketNotification("GET_AUTH_TICKET", this.config);
-        }, this.config.retryDelay);
-        return;
-      }
+  if (notification === "GET_AUTH_TICKET") {
+    // ...
+  } else if (notification === "CARD_ACCOUNTS_RESULT") {
+    // ...
+  } else if (notification === "FAVORITE_STORES_RESULT") {
+    // ...
+  } else if (notification === "GET_STORE_RESULT") {
+    if (payload.error) {
+      this.handleError(payload.error, "Store");
+    } else {
+      const store = payload.store;
+      console.log(`Got store: ${JSON.stringify(store)}`);
+      this.store = store;
+      const cardAccountsOptions = {
+        method: "GET",
+        url: `${this.config.apiUrl}/user/cardaccounts`,
+        headers: {
+          "AuthenticationTicket": this.authTicket
+        }
+      };
+      this.makeCardAccountsRequest(cardAccountsOptions);
+    }
+  } else {
+    console.warn(`Unknown socket notification received: ${notification}`);
+  }
+},
+
 
       const authTicket = payload.authTicket;
       if (!authTicket) {
