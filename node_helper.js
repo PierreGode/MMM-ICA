@@ -40,56 +40,56 @@ module.exports = NodeHelper.create({
 
         console.log(`Got authentication ticket: ${authTicket}`);
         self.authTicket = authTicket;
-      if (notification === "GET_TRANSACTIONS") {
-        console.log("Retrieving transactions");
 
-        if (!this.authTicket) {
-          console.log("No authentication ticket found, getting a new one...");
-          this.sendSocketNotification("GET_AUTH_TICKET", this.config);
-        } else {
-          const options = {
-            method: "GET",
-            url: `${this.config.apiUrl}/user/cardaccounts/${payload.cardAccountId}/transactions`,
-            headers: {
-              "AuthenticationTicket": this.authTicket
-            }
-          };
-
-          this.makeTransactionsRequest(options);
-        }
-      }
-    },
-
-    makeTransactionsRequest: function(options) {
-      var self = this;
-      request(options, function(error, response, body) {
-        if (!error && response.statusCode === 200) {
-          const transactions = JSON.parse(body);
-          console.log(`Got ${transactions.length} transactions`);
-
-          // Format the transactions and send them to the client
-          const formattedTransactions = self.formatTransactions(transactions);
-          self.sendSocketNotification("TRANSACTIONS_RESULT", { transactions: formattedTransactions });
-        } else {
-          console.error(`Error getting transactions: ${error}`);
-          self.sendSocketNotification("TRANSACTIONS_RESULT", { error: error });
-        }
-      });
-    },
-
-    formatTransactions: function(transactions) {
-      const formattedTransactions = [];
-
-      transactions.forEach(transaction => {
-        const formattedTransaction = {
-          date: new Date(transaction.timestamp),
-          merchant: transaction.merchant.name,
-          amount: transaction.amount.value,
-          currency: transaction.amount.currency
+        const cardAccountsOptions = {
+          method: "GET",
+          url: `${self.config.apiUrl}/user/cardaccounts`,
+          headers: {
+            "AuthenticationTicket": authTicket
+          }
         };
-        formattedTransactions.push(formattedTransaction);
-      });
 
-      return formattedTransactions;
-    }
-  });
+        self.makeCardAccountsRequest(cardAccountsOptions);
+      } else {
+        console.error(`Error getting authentication ticket: ${error}`);
+        self.sendSocketNotification("AUTH_TICKET_RESULT", { error: error });
+      }
+    });
+  },
+
+  makeCardAccountsRequest: function(options) {
+    var self = this;
+    request(options, function(error, response, body) {
+      if (!error && response.statusCode === 200) {
+        const cardAccounts = JSON.parse(body);
+        console.log("Got card accounts:", cardAccounts);
+        self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { cardAccounts: cardAccounts });
+        const favoriteStoresOptions = {
+          method: "GET",
+          url: `${self.config.storeApiUrl}/user/stores`,
+          headers: {
+            "AuthenticationTicket": self.authTicket
+          }
+        };
+        self.makeFavoriteStoresRequest(favoriteStoresOptions);
+      } else {
+        console.error(`Error getting card accounts: ${error}`);
+        self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { error: error });
+      }
+    });
+  },
+
+  makeFavoriteStoresRequest: function(options) {
+    var self = this;
+    request(options, function(error, response, body) {
+      if (!error && response.statusCode === 200) {
+        const favoriteStores = JSON.parse(body);
+        console.log("Got favorite stores:", favoriteStores);
+        self.sendSocketNotification("FAVORITE_STORES_RESULT", { favoriteStores: favoriteStores });
+      } else {
+        console.error(`Error getting favorite stores: ${error}`);
+        self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: error });
+      }
+    });
+  }
+});
