@@ -4,7 +4,6 @@ const request = require("request");
 module.exports = NodeHelper.create({
   start: function() {
     console.log(`Starting helper: ${this.name}`);
-    
   },
 
   socketNotificationReceived: function(notification, payload) {
@@ -50,7 +49,7 @@ module.exports = NodeHelper.create({
           }
         };
 
-        self.makeCardAccountsRequest(cardAccountsOptions);
+        self.makeCardAccountsRequest(cardAccountsOptions, response);
       } else {
         console.error(`Error getting authentication ticket: ${error}`);
         self.sendSocketNotification("AUTH_TICKET_RESULT", { error: error });
@@ -58,7 +57,7 @@ module.exports = NodeHelper.create({
     });
   },
 
-  makeCardAccountsRequest: function(options) {
+  makeCardAccountsRequest: function(options, response) {
     var self = this;
 
     // Check if authentication ticket is still valid
@@ -99,8 +98,13 @@ module.exports = NodeHelper.create({
                 }
               };
               self.makeFavoriteStoresRequest(favoriteStoresOptions);
+            } else {
+              console.error(`Error renewing authentication ticket: ${error}`);
+              self.sendSocketNotification("AUTH_TICKET_RESULT", { error: error });
+            }
+          });
         } else {
-          console.error(`Error renewing authentication ticket: ${error}`);
+          console.error(`Error getting authentication ticket: ${error}`);
           self.sendSocketNotification("AUTH_TICKET_RESULT", { error: error });
         }
       });
@@ -149,6 +153,20 @@ module.exports = NodeHelper.create({
       } else {
         console.error(`Error getting transactions: ${error}`);
         self.sendSocketNotification("TRANSACTIONS_RESULT", { error: error });
+      }
+    });
+  },
+
+  makeFavoriteStoresRequest: function(options) {
+    var self = this;
+    request(options, function(error, response, body) {
+      if (!error && response.statusCode === 200) {
+        const favoriteStores = JSON.parse(body);
+        console.log("Got favorite stores:", favoriteStores);
+        self.sendSocketNotification("FAVORITE_STORES_RESULT", { favoriteStores: favoriteStores });
+      } else {
+        console.error(`Error getting favorite stores: ${error}`);
+        self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: error });
       }
     });
   }
