@@ -91,8 +91,7 @@ module.exports = NodeHelper.create({
       }
     });
   },
-
-  scheduleUpdate: function() {
+    scheduleUpdate: function() {
     if (this.updateTimer) {
       clearTimeout(this.updateTimer);
     }
@@ -149,4 +148,3 @@ module.exports = NodeHelper.create({
     this.sendSocketNotification("DOM_OBJECTS", wrapper.innerHTML);
   }
 });
-
