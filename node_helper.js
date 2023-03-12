@@ -1,9 +1,11 @@
-const NodeHelper = require("node_helper");
-const request = require("request");
+const TICKET_EXPIRATION_TIME = 60 * 60 * 1000; // 60 minutes in milliseconds
 
 module.exports = NodeHelper.create({
   start: function() {
     console.log(`Starting helper: ${this.name}`);
+    this.authTicket = null;
+    this.ticketExpiration = null;
+    this.startTicketExpirationTimer();
   },
 
   socketNotificationReceived: function(notification, payload) {
@@ -40,6 +42,7 @@ module.exports = NodeHelper.create({
 
         console.log(`Got authentication ticket: ${authTicket}`);
         self.authTicket = authTicket;
+        self.ticketExpiration = Date.now() + TICKET_EXPIRATION_TIME;
 
         const cardAccountsOptions = {
           method: "GET",
@@ -91,5 +94,28 @@ module.exports = NodeHelper.create({
         self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: error });
       }
     });
+  },
+checkTicketExpiration: function() {
+    if (this.authTicket && this.ticketExpiration <= Date.now()) {
+      console.log("Authentication ticket has expired, refreshing...");
+
+      const authHeader = `Basic ${Buffer.from(`${this.config.username}:${this.config.password}`).toString("base64")}`;
+      const options = {
+        method: "GET",
+        url: `${this.config.apiUrl}/login`,
+        headers: {
+          "Authorization": authHeader
+        }
+      };
+
+      this.makeRequest(options);
+    }
+  },
+
+  startTicketExpirationTimer: function() {
+    var self = this;
+    setInterval(function() {
+      self.checkTicketExpiration();
+    }, TICKET_EXPIRATION_TIME / 2);
   }
 });
