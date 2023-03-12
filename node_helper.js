@@ -4,6 +4,7 @@ const request = require("request");
 module.exports = NodeHelper.create({
   start: function() {
     console.log(`Starting helper: ${this.name}`);
+    
   },
 
   socketNotificationReceived: function(notification, payload) {
