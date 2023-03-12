@@ -4,19 +4,6 @@ const request = require("request");
 module.exports = NodeHelper.create({
   start: function() {
     console.log(`Starting helper: ${this.name}`);
-
-    // Start the interval to refresh the authentication ticket every 60 minutes
-    setInterval(() => {
-      console.log("Refreshing authentication ticket");
-      const options = {
-        method: "GET",
-        url: `${this.config.apiUrl}/login`,
-        headers: {
-          "Authorization": `Basic ${Buffer.from(`${this.config.username}:${this.config.password}`).toString("base64")}`
-        }
-      };
-      this.makeRequest(options);
-    }, 60 * 60 * 1000);
   },
 
   socketNotificationReceived: function(notification, payload) {
@@ -25,14 +12,22 @@ module.exports = NodeHelper.create({
     if (notification === "GET_AUTH_TICKET") {
       this.config = payload;
       console.log("Retrieving authentication ticket");
+
+      const authHeader = `Basic ${Buffer.from(`${payload.username}:${payload.password}`).toString("base64")}`;
       const options = {
         method: "GET",
         url: `${payload.apiUrl}/login`,
         headers: {
-          "Authorization": `Basic ${Buffer.from(`${payload.username}:${payload.password}`).toString("base64")}`
+          "Authorization": authHeader
         }
       };
+
       this.makeRequest(options);
+      // Schedule a refresh of the authentication ticket every 60 minutes
+      setInterval(() => {
+        console.log("Refreshing authentication ticket");
+        this.makeRequest(options);
+      }, 60 * 60 * 1000); // 60 minutes * 60 seconds * 1000 milliseconds
     }
   },
 
@@ -58,6 +53,7 @@ module.exports = NodeHelper.create({
             "AuthenticationTicket": authTicket
           }
         };
+
         self.makeCardAccountsRequest(cardAccountsOptions);
       } else {
         console.error(`Error getting authentication ticket: ${error}`);
@@ -95,23 +91,10 @@ module.exports = NodeHelper.create({
         const favoriteStores = JSON.parse(body);
         console.log("Got favorite stores:", favoriteStores);
         self.sendSocketNotification("FAVORITE_STORES_RESULT", { favoriteStores: favoriteStores });
+      } else {
+        console.error(`Error getting favorite stores: ${error}`);
+        self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: error });
       }
     });
-
-    // Start the interval to refresh the authentication ticket every 60 minutes
-    setInterval(() => {
-      console.log("Refreshing authentication ticket for favorite stores request");
-      const options = {
-        method: "GET",
-        url: `${self.config.apiUrl}/login`,
-        headers: {
-          "Authorization": `Basic ${Buffer.from(`${self.config.username}:${self.config.password}`).toString("base64")}`
-        }
-      };
-      self.makeRequest(options, function(newAuthTicket) {
-        console.log("Got new authentication ticket:", newAuthTicket);
-        options.headers.AuthenticationTicket = newAuthTicket;
-        self.makeFavoriteStoresRequest(options);
-      });
-    }, 60 * 60 * 1000);
-  },
+  }
+});
