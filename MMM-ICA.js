@@ -53,9 +53,10 @@ getDom: function() {
       wrapper.appendChild(favoriteStoresDiv);
     }
 
-if (this.config.settings.offers && this.offers && this.config.offersStoreId) {
+if (this.offers && this.offers.Offers) {
   const offersDiv = document.createElement("div");
-  const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId.toString());
+  const offers = this.offers.Offers;
+
   if (offers.length > 0) {
     offersDiv.innerHTML = "Offers:<br>";
     offers.forEach(offer => {
@@ -63,13 +64,17 @@ if (this.config.settings.offers && this.offers && this.config.offersStoreId) {
       const offerSize = offer.SizeOrQuantity || "N/A";
       offersDiv.innerHTML += `${offerName} - ${offerSize}<br>`;
     });
-    wrapper.appendChild(offersDiv);
   } else {
-    const noOffersDiv = document.createElement("div");
-    noOffersDiv.innerHTML = "No offers available for the specified store ID.";
-    wrapper.appendChild(noOffersDiv);
+    offersDiv.innerHTML = "No offers available.";
   }
+  
+  wrapper.appendChild(offersDiv);
+} else {
+  const errorDiv = document.createElement("div");
+  errorDiv.innerHTML = "Error: No offers data available.";
+  wrapper.appendChild(errorDiv);
 }
+
 
     if (this.config.settings.DisplayStoreID) {
       const storeIDDiv = document.createElement("div");
