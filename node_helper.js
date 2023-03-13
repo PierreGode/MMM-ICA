@@ -85,7 +85,7 @@ module.exports = NodeHelper.create({
       if (!error && response.statusCode === 200) {
         const favoriteStores = JSON.parse(body);
         console.log("Got favorite stores:", favoriteStores);
-        self.sendSocketNotification("FAVORITE_STORES_RESULT", { favoriteStores: favoriteStores.Offers }); // Add .Offers to include offers
+        self.sendSocketNotification("FAVORITE_STORES_RESULT", { favoriteStores: favoriteStores });
       } else {
         console.error(`Error getting favorite stores: ${error}`);
         self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: error });
