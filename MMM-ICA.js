@@ -48,16 +48,17 @@ getDom: function() {
 
     if (this.config.settings.FavoriteStores && this.favoriteStores) {
       const favoriteStoresDiv = document.createElement("div");
-      const favoriteStores = this.favoriteStores.FavoriteStores.map(store => `${store.StoreId} - ${store.StoreName}`).join(", ");
+      const favoriteStores = this.favoriteStores.FavoriteStores.join();
       favoriteStoresDiv.innerHTML = `Favorite Stores: ${favoriteStores}`;
       wrapper.appendChild(favoriteStoresDiv);
     }
 
-    if (this.config.offersStoreId && this.offers) {
+    if (this.config.offers && this.offers) {
       const offersDiv = document.createElement("div");
-      const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId);
+      const storeId = this.config.offers;
+      const offers = this.offers.Offers.filter(offer => offer.StoreId === storeId);
       if (offers.length > 0) {
-        offersDiv.innerHTML = "Offers:<br>";
+        offersDiv.innerHTML = `Offers for Store ID ${storeId}:<br>`;
         offers.forEach(offer => {
           offersDiv.innerHTML += `${offer.ProductName} - ${offer.SizeOrQuantity}<br>`;
         });
@@ -71,7 +72,6 @@ getDom: function() {
 
   return wrapper;
 },
-
 
   // Override socket notification handler.
   socketNotificationReceived: function(notification, payload) {
