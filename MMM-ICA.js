@@ -11,7 +11,8 @@ Module.register("MMM-ICA", {
       Saldo: true,
       AccountName: true,
       FavoriteStores: true
-    }
+    },
+    offersStoreId: "" // Default store ID for which offers will be displayed
   },
 
   start: function() {
@@ -45,12 +46,24 @@ Module.register("MMM-ICA", {
         wrapper.appendChild(accountNameDiv);
       }
 
-if (this.config.settings.FavoriteStores && this.favoriteStores) {
-  const favoriteStoresDiv = document.createElement("div");
-  const favoriteStores = this.favoriteStores.FavoriteStores.join();
-  favoriteStoresDiv.innerHTML = `Favorite Stores: ${favoriteStores}`;
-  wrapper.appendChild(favoriteStoresDiv);
-}
+      if (this.config.settings.FavoriteStores && this.favoriteStores) {
+        const favoriteStoresDiv = document.createElement("div");
+        const favoriteStores = this.favoriteStores.FavoriteStores.join();
+        favoriteStoresDiv.innerHTML = `Favorite Stores: ${favoriteStores}`;
+        wrapper.appendChild(favoriteStoresDiv);
+      }
+
+      if (this.config.offersStoreId && this.offers) {
+        const offersDiv = document.createElement("div");
+        const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId);
+        if (offers.length > 0) {
+          offersDiv.innerHTML = "Offers:<br>";
+          offers.forEach(offer => {
+            offersDiv.innerHTML += `${offer.ProductName} - ${offer.SizeOrQuantity}<br>`;
+          });
+          wrapper.appendChild(offersDiv);
+        }
+      }
 
     } else {
       wrapper.innerHTML = "Loading content...";
