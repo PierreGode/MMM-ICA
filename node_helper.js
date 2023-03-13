@@ -118,3 +118,5 @@ makeOffersRequest: function(options) {
       }
     });
   },
+  }
+});
