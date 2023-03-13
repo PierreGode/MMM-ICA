@@ -5,6 +5,7 @@ Module.register("MMM-ICA", {
     apiUrl: "",
     storeApiUrl: "",
     updateNotification: "UPDATE_ICA_MODULE",
+    refreshInterval: 10 * 60 * 1000, // Refresh every 10 minutes
     updateInterval: 60 * 60 * 1000, // Update every hour.
     retryDelay: 5 * 60 * 1000, // Retry every 5 minutes if an error occurs.
     settings: {
@@ -28,6 +29,13 @@ Module.register("MMM-ICA", {
 
     this.sendSocketNotification("GET_AUTH_TICKET", this.config);
   },
+  
+      // Refresh the module data every `refreshInterval` milliseconds.
+    setInterval(function() {
+      self.updateDom();
+    }, self.config.refreshInterval);
+  },
+
 
   getDom: function() {
   const wrapper = document.createElement("div");
