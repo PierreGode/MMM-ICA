@@ -216,6 +216,5 @@ getDom: function() {
   }
 
   return wrapper;
-},
-
+}
 });
