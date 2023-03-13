@@ -76,32 +76,33 @@ module.exports = NodeHelper.create({
       }
     });
   },
-  makeFavoriteStoresRequest: function(options) {
-    var self = this;
-    request(options, function(error, response, body) {
-      if (!error && response.statusCode === 200) {
-        const favoriteStores = JSON.parse(body);
-        console.log("Got favorite stores:", favoriteStores);
-        self.sendSocketNotification("FAVORITE_STORES_RESULT", { favoriteStores: favoriteStores });
+makeFavoriteStoresRequest: function(options) {
+  var self = this;
+  request(options, function(error, response, body) {
+    if (!error && response.statusCode === 200) {
+      const favoriteStores = JSON.parse(body);
+      console.log("Got favorite stores:", favoriteStores);
+      self.sendSocketNotification("FAVORITE_STORES_RESULT", { favoriteStores: favoriteStores });
 
-        const offersOptions = {
-          method: "GET",
-          url: `${self.config.apiUrl}/offers/offers`,
-          headers: {
-            "AuthenticationTicket": self.authTicket
-          }
-        };
-        if (self.config.offers) {
-          const storeId = self.config.offers;
-          offersOptions.url = `${offersOptions.url}/store/${storeId}`;
-          console.log(`Retrieving offers for store ${storeId}`);
-        } else {
-          console.log("Retrieving all offers");
+      const offersOptions = {
+        method: "GET",
+        url: `${self.config.apiUrl}/offers/offers`,
+        headers: {
+          "AuthenticationTicket": self.authTicket
         }
-        self.makeOffersRequest(offersOptions);
+      };
+      if (self.config.offers) {
+        const storeId = self.config.offers;
+        offersOptions.url = `${offersOptions.url}/store/${storeId}`;
+        console.log(`Retrieving offers for store ${storeId}`);
       } else {
-        console.error(`Error getting favorite stores: ${error}`);
-        self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: error });
+        console.log("Retrieving all offers");
       }
-    });
-  },
+      self.makeOffersRequest(offersOptions);
+    } else {
+      console.error(`Error getting favorite stores: ${error}`);
+      self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: error });
+    }
+  });
+},
+
