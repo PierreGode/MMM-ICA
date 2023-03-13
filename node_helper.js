@@ -25,8 +25,7 @@ module.exports = NodeHelper.create({
       this.makeRequest(options);
     }
   },
-
-  makeRequest: function(options) {
+makeRequest: function(options) {
     var self = this;
     request(options, function(error, response, body) {
       if (!error && response.statusCode === 200) {
@@ -56,8 +55,7 @@ module.exports = NodeHelper.create({
       }
     });
   },
-
-  makeCardAccountsRequest: function(options) {
+makeCardAccountsRequest: function(options) {
     var self = this;
     request(options, function(error, response, body) {
       if (!error && response.statusCode === 200) {
@@ -78,7 +76,19 @@ module.exports = NodeHelper.create({
       }
     });
   },
-
+makeOffersRequest: function(options) {
+  var self = this;
+  request(options, function(error, response, body) {
+    if (!error && response.statusCode === 200) {
+      const offers = JSON.parse(body);
+      console.log("Got offers:", offers);
+      self.sendSocketNotification("OFFERS_RESULT", { offers: offers });
+    } else {
+      console.error(`Error getting offers: ${error}`);
+      self.sendSocketNotification("OFFERS_RESULT", { error: error });
+    }
+  });
+},
   makeFavoriteStoresRequest: function(options) {
     var self = this;
     request(options, function(error, response, body) {
@@ -86,6 +96,22 @@ module.exports = NodeHelper.create({
         const favoriteStores = JSON.parse(body);
         console.log("Got favorite stores:", favoriteStores);
         self.sendSocketNotification("FAVORITE_STORES_RESULT", { favoriteStores: favoriteStores });
+
+        const offersOptions = {
+          method: "GET",
+          url: `${self.config.storeApiUrl}/offers?Stores=${self.config.offersStoreId}`,
+          headers: {
+            "AuthenticationTicket": self.authTicket
+          }
+        };
+        if (self.config.offers) {
+          const storeId = self.config.offers;
+          offersOptions.url = `${offersOptions.url}/store/${storeId}`;
+          console.log(`Retrieving offers for store ${storeId}`);
+        } else {
+          console.log("Retrieving all offers");
+        }
+        self.makeOffersRequest(offersOptions);
       } else {
         console.error(`Error getting favorite stores: ${error}`);
         self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: error });
