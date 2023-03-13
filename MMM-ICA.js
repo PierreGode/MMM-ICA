@@ -28,36 +28,55 @@ Module.register("MMM-ICA", {
     this.sendSocketNotification("GET_AUTH_TICKET", this.config);
   },
 
-  getDom: function() {
-    const wrapper = document.createElement("div");
-    wrapper.className = "small bright";
+getDom: function() {
+  const wrapper = document.createElement("div");
+  wrapper.className = "small bright";
 
-    if (this.cardAccounts) {
-      if (this.config.settings.Saldo) {
-        const saldoDiv = document.createElement("div");
-        saldoDiv.innerHTML = `Tillgängligt Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Available}`;
-        wrapper.appendChild(saldoDiv);
-      }
-
-      if (this.config.settings.AccountName) {
-        const accountNameDiv = document.createElement("div");
-        accountNameDiv.innerHTML = `Account Name: ${this.cardAccounts.Cards[0].Accounts[0].AccountName}`;
-        wrapper.appendChild(accountNameDiv);
-      }
-
-if (this.config.settings.FavoriteStores && this.favoriteStores) {
-  const favoriteStoresDiv = document.createElement("div");
-  const favoriteStores = this.favoriteStores.FavoriteStores.join();
-  favoriteStoresDiv.innerHTML = `Favorite Stores: ${favoriteStores}`;
-  wrapper.appendChild(favoriteStoresDiv);
-}
-
-    } else {
-      wrapper.innerHTML = "Loading content...";
+  if (this.cardAccounts) {
+    if (this.config.settings.Saldo) {
+      const saldoDiv = document.createElement("div");
+      saldoDiv.innerHTML = `Tillgängligt Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Available}`;
+      wrapper.appendChild(saldoDiv);
     }
 
-    return wrapper;
-  },
+    if (this.config.settings.AccountName) {
+      const accountNameDiv = document.createElement("div");
+      accountNameDiv.innerHTML = `Account Name: ${this.cardAccounts.Cards[0].Accounts[0].AccountName}`;
+      wrapper.appendChild(accountNameDiv);
+    }
+
+    if (this.config.settings.FavoriteStores && this.favoriteStores) {
+      const favoriteStoresDiv = document.createElement("div");
+      const favoriteStores = this.favoriteStores.FavoriteStores.join();
+      favoriteStoresDiv.innerHTML = `Favorite Stores: ${favoriteStores}`;
+      wrapper.appendChild(favoriteStoresDiv);
+    }
+
+    if (this.config.offersStoreId && this.cardAccounts && this.cardAccounts.Cards[0].Accounts[0].Stores) {
+      const offersDiv = document.createElement("div");
+      const storeId = this.config.offersStoreId;
+      const store = this.cardAccounts.Cards[0].Accounts[0].Stores.find(s => s.Id === storeId);
+      if (store && store.Offers) {
+        const offers = store.Offers.filter(o => o.Category === 2);
+        if (offers.length > 0) {
+          const offersList = document.createElement("ul");
+          offers.forEach(offer => {
+            const offerItem = document.createElement("li");
+            offerItem.innerHTML = offer.ProductName;
+            offersList.appendChild(offerItem);
+          });
+          offersDiv.appendChild(offersList);
+          wrapper.appendChild(offersDiv);
+        }
+      }
+    }
+
+  } else {
+    wrapper.innerHTML = "Loading content...";
+  }
+
+  return wrapper;
+}
 
   // Override socket notification handler.
   socketNotificationReceived: function(notification, payload) {
