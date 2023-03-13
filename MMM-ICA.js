@@ -55,10 +55,12 @@ getDom: function() {
 
       if (this.config.settings.offers && this.config.offersStoreId && this.offers) {
         const offersDiv = document.createElement("div");
-        const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId).map(offer => `${offer.ProductName} - ${offer.SizeOrQuantity}`).join("<br>");
+        offersDiv.innerHTML = `Personal offers:`;
+        const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId);
         if (offers.length > 0) {
-          offersDiv.innerHTML = "Offers:<br>";
-          offersDiv.innerHTML += offers;
+          offers.forEach(offer => {
+            offersDiv.innerHTML += `${offer.ProductName} - ${offer.SizeOrQuantity}<br>`;
+          });
           wrapper.appendChild(offersDiv);
         }
       }
