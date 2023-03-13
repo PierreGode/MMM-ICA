@@ -99,7 +99,7 @@ makeFavoriteStoresRequest: function(options) {
 
       const offersOptions = {
         method: "GET",
-        url: `${self.config.apiUrl}/offers/offers`,
+        url: `${self.config.storeApiUrl}/offers?Stores=${self.config.offersStoreId}`,
         headers: {
           "AuthenticationTicket": self.authTicket
         }
