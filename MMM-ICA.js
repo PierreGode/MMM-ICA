@@ -52,6 +52,16 @@ getDom: function() {
       favoriteStoresDiv.innerHTML = `Favorite Stores: ${favoriteStores}`;
       wrapper.appendChild(favoriteStoresDiv);
     }
+    
+   if (this.config.settings.DisplayStoreID) {
+      const storeIDDiv = document.createElement("div");
+      storeIDDiv.innerHTML = `Store ID: ${this.config.offersStoreId}`;
+      wrapper.appendChild(storeIDDiv);
+     }
+
+     } else {
+      wrapper.innerHTML = "Loading content...";
+     }
 
 if (this.config.settings.offers && this.offers && this.config.offersStoreId) {
   const offersDiv = document.createElement("div");
@@ -66,16 +76,6 @@ if (this.config.settings.offers && this.offers && this.config.offersStoreId) {
     wrapper.appendChild(noOffersDiv);
   }
 }
-
-    if (this.config.settings.DisplayStoreID) {
-      const storeIDDiv = document.createElement("div");
-      storeIDDiv.innerHTML = `Store ID: ${this.config.offersStoreId}`;
-      wrapper.appendChild(storeIDDiv);
-    }
-
-  } else {
-    wrapper.innerHTML = "Loading content...";
-  }
 
   return wrapper;
 },
