@@ -53,11 +53,12 @@ getDom: function() {
       wrapper.appendChild(favoriteStoresDiv);
     }
 
-    if (this.config.offersStoreId && this.offers) {
+    if (this.config.offers && this.offers) {
       const offersDiv = document.createElement("div");
-      const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId);
+      const storeId = this.config.offers;
+      const offers = this.offers.Offers.filter(offer => offer.StoreId === storeId);
       if (offers.length > 0) {
-        offersDiv.innerHTML = "Offers:<br>";
+        offersDiv.innerHTML = `Offers for Store ID ${storeId}:<br>`;
         offers.forEach(offer => {
           offersDiv.innerHTML += `${offer.ProductName} - ${offer.SizeOrQuantity}<br>`;
         });
@@ -73,7 +74,7 @@ getDom: function() {
 },
 
   // Override socket notification handler.
-socketNotificationReceived: function(notification, payload) {
+  socketNotificationReceived: function(notification, payload) {
     console.log("Received socket notification:", notification, "with payload:", payload);
 
     if (notification === "AUTH_TICKET_RESULT") {
@@ -163,6 +164,7 @@ socketNotificationReceived: function(notification, payload) {
   console.warn(`Unknown socket notification received: ${notification}`);
 }
 },
+
 getCardAccounts: function() {
 console.log("Retrieving card accounts");
   const options = {
@@ -176,19 +178,6 @@ console.log("Retrieving card accounts");
 this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
 },
 
-getOffers: function(storeId) {
-  console.log(`Retrieving offers for store ${storeId}`);
-  const options = {
-    method: "GET",
-    url: `${this.config.apiUrl}/offers?Stores=${storeId}`,
-    headers: {
-      "AuthenticationTicket": this.authTicket
-    }
-  };
-
-  this.sendSocketNotification("GET_OFFERS", options);
-},
-
 getFavoriteStores: function() {
 console.log("Retrieving favorite stores");
   const options = {
@@ -197,44 +186,6 @@ console.log("Retrieving favorite stores");
   headers: {
     "AuthenticationTicket": this.authTicket
   }
-};
-
-this.sendSocketNotification("GET_FAVORITE_STORES", options);
-}
-getCardAccounts: function() {
-console.log("Retrieving card accounts");
-const options = {
-method: "GET",
-url: ${this.config.apiUrl}/user/cardaccounts,
-headers: {
-"AuthenticationTicket": this.authTicket
-}
-};
-
-this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
-},
-
-getOffers: function(storeId) {
-console.log(Retrieving offers for store ${storeId});
-const options = {
-method: "GET",
-url: ${this.config.apiUrl}/offers?Stores=${storeId},
-headers: {
-"AuthenticationTicket": this.authTicket
-}
-};
-
-this.sendSocketNotification("GET_OFFERS", options);
-},
-
-getFavoriteStores: function() {
-console.log("Retrieving favorite stores");
-const options = {
-method: "GET",
-url: ${this.config.storeApiUrl}/user/stores,
-headers: {
-"AuthenticationTicket": this.authTicket
-}
 };
 
 this.sendSocketNotification("GET_FAVORITE_STORES", options);
