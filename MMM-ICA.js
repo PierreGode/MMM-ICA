@@ -35,7 +35,7 @@ Module.register("MMM-ICA", {
     if (this.cardAccounts) {
       if (this.config.settings.Saldo) {
         const saldoDiv = document.createElement("div");
-        saldoDiv.innerHTML = `Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Available}`;
+        saldoDiv.innerHTML = `Tillgängligt Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Available}`;
         wrapper.appendChild(saldoDiv);
       }
 
