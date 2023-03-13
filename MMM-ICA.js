@@ -29,7 +29,7 @@ Module.register("MMM-ICA", {
     this.sendSocketNotification("GET_AUTH_TICKET", this.config);
   },
 
-  getDom: function() {
+getDom: function() {
     const wrapper = document.createElement("div");
     wrapper.className = "small bright";
 
@@ -53,24 +53,24 @@ Module.register("MMM-ICA", {
         wrapper.appendChild(favoriteStoresDiv);
       }
 
-if (this.config.settings.offers && this.config.offersStoreId && this.offers) {
-  const offersDiv = document.createElement("div");
-  const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId);
-  if (offers.length > 0) {
-    offersDiv.innerHTML = "Offers:<br>";
-    offers.forEach(offer => {
-      offersDiv.innerHTML += `${offer.ProductName} - ${offer.SizeOrQuantity}<br>`;
-    });
-    wrapper.appendChild(offersDiv);
-  }
-}
+      if (this.config.settings.offers && this.config.offersStoreId && this.offers) {
+        const offersDiv = document.createElement("div");
+        const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId);
+        if (offers.length > 0) {
+          offersDiv.innerHTML = "Offers:<br>";
+          offers.forEach(offer => {
+            offersDiv.innerHTML += `${offer.ProductName} - ${offer.SizeOrQuantity}<br>`;
+          });
+          wrapper.appendChild(offersDiv);
+        }
+      }
 
     } else {
       wrapper.innerHTML = "Loading content...";
     }
 
     return wrapper;
-  },
+},
 
   // Override socket notification handler.
 socketNotificationReceived: function(notification, payload) {
