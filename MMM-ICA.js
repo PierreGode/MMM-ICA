@@ -67,7 +67,7 @@ getDom: function() {
     const offersDiv = document.createElement("div");
     const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId);
     if (offers.length > 0) {
-      const productName = offers[0].Articles[0].ArticleDescription;
+      const productName = offers[0].ArticleDescription;
       offersDiv.innerHTML = `Offer:<br>${productName}`;
       wrapper.appendChild(offersDiv);
     } else {
@@ -80,7 +80,6 @@ getDom: function() {
   return wrapper;
 },
 
-  // Override socket notification handler.
   // Override socket notification handler.
   socketNotificationReceived: function(notification, payload) {
     console.log("Received socket notification:", notification, "with payload:", payload);
