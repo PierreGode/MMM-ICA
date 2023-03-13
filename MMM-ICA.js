@@ -48,7 +48,6 @@ Module.register("MMM-ICA", {
         favoriteStoresDiv.innerHTML = `Favorite Stores: ${favoriteStores}`;
         wrapper.appendChild(favoriteStoresDiv);
       }
-
     } else {
       wrapper.innerHTML = "Loading content...";
     }
@@ -94,54 +93,9 @@ Module.register("MMM-ICA", {
         setTimeout(() => {
           this.getCardAccounts();
         }, this.config.retryDelay);
-      const cardAccounts = payload.cardAccounts;
-      if (!cardAccounts) {
-        console.error("Error: Unable to retrieve card accounts.");
-        setTimeout(() => {
-          this.getCardAccounts();
-        }, this.config.retryDelay);
         return;
       }
-
-      console.log(`Got card accounts: ${JSON.stringify(cardAccounts)}`);
-      this.cardAccounts = cardAccounts;
-      this.updateDom();
-
-      // Schedule the next call to the card accounts API.
-      setTimeout(() => {
-        this.getCardAccounts();
-      }, this.config.updateInterval);
-    } else if (notification === "FAVORITE_STORES_RESULT") {
-      if (payload.error) {
-        console.error(`Error getting favorite stores: ${payload.error}`);
-        setTimeout(() => {
-          this.getFavoriteStores();
-        }, this.config.retryDelay);
-        return;
-      }
-
-      const favoriteStores = payload.favoriteStores;
-      if (!favoriteStores) {
-        console.error("Error: Unable to retrieve favorite stores.");
-        setTimeout(() => {
-          this.getFavoriteStores();
-        }, this.config.retryDelay);
-        return;
-      }
-
-      console.log(`Got favorite stores: ${JSON.stringify(favoriteStores)}`);
-      this.favoriteStores = favoriteStores;
-      this.updateDom();
-
-      // Schedule the next call to the favorite stores API.
-      setTimeout(() => {
-        this.getFavoriteStores();
-      }, this.config.updateInterval);
-    } else {
-      console.warn(`Unknown socket notification received: ${notification}`);
-    }
-  },
-  getCardAccounts: function() {
+    getCardAccounts: function() {
     console.log("Retrieving card accounts");
     const options = {
       method: "GET",
