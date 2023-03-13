@@ -117,6 +117,5 @@ makeOffersRequest: function(options) {
         self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: error });
       }
     });
-  },
   }
 });
