@@ -53,17 +53,18 @@ getDom: function() {
         wrapper.appendChild(favoriteStoresDiv);
       }
 
-      if (this.config.settings.offers && this.config.offersStoreId && this.offers) {
-        const offersDiv = document.createElement("div");
-        offersDiv.innerHTML = `Personal offers:`;
-        const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId);
-        if (offers.length > 0) {
-          offers.forEach(offer => {
-            offersDiv.innerHTML += `${offer.ProductName} - ${offer.SizeOrQuantity}<br>`;
-          });
-          wrapper.appendChild(offersDiv);
-        }
-      }
+if (this.config.settings.offers && this.config.offersStoreId && this.offers) {
+  const offersDiv = document.createElement("div");
+  offersDiv.innerHTML = "Personal offers:<br>"; // Add this line
+  //const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId && offer.ProductName === "Kladdkaka").map(offer => `${offer.ProductName} - ${offer.SizeOrQuantity}`).join("<br>");
+  //const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId && offer.ProductName === "Kladdkaka");
+  const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId);
+  if (offers.length > 0) {
+    offersDiv.innerHTML += offers;
+    wrapper.appendChild(offersDiv);
+  }
+}
+
 
     } else {
       wrapper.innerHTML = "Loading content...";
