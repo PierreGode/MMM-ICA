@@ -57,21 +57,9 @@ if (this.config.settings.offers && this.offers && this.config.offersStoreId) {
   const offersDiv = document.createElement("div");
   const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId);
   if (offers.length > 0) {
-
-        if (this.config.settings.DisplayStoreID) {
-      const storeIDDiv = document.createElement("div");
-      storeIDDiv.innerHTML = `Store ID: ${this.config.offersStoreId}`;
-      wrapper.appendChild(storeIDDiv);
-    }
-
-  } else {
-    wrapper.innerHTML = "Loading content...";
-  }
-
   return wrapper;
 },
-    
-    
+       
     const productName = Offers[0].ProductName;
     offersDiv.innerHTML = `Offer:<br>${productName}`;
     wrapper.appendChild(offersDiv);
