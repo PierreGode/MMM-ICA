@@ -53,14 +53,14 @@ getDom: function() {
         wrapper.appendChild(favoriteStoresDiv);
       }
       
-     if (this.config.settings.offers && this.config.offersStoreId && this.offers) {
+      if (this.config.settings.offers && this.config.offersStoreId && this.offers) {
         const offersDiv = document.createElement("div");
         const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId);
         offersDiv.innerHTML = `MY Offers: ${offers}`;
-        if (offers.length > 0) {
-        wrapper.appendChild(offersDiv);
-  }
-}
+      if (offers.length > 0) {
+         wrapper.appendChild(offersDiv);
+      }
+    }
 
 
     } else {
