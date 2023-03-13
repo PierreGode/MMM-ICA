@@ -52,33 +52,34 @@ getDom: function() {
       favoriteStoresDiv.innerHTML = `Favorite Stores: ${favoriteStores}`;
       wrapper.appendChild(favoriteStoresDiv);
     }
-    
-   if (this.config.settings.DisplayStoreID) {
+
+    if (this.config.settings.DisplayStoreID) {
       const storeIDDiv = document.createElement("div");
       storeIDDiv.innerHTML = `Store ID: ${this.config.offersStoreId}`;
       wrapper.appendChild(storeIDDiv);
-     }
+    }
 
-     } else {
-      wrapper.innerHTML = "Loading content...";
-     }
-
-if (this.config.settings.offers && this.offers && this.config.offersStoreId) {
-  const offersDiv = document.createElement("div");
-  const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId);
-  if (offers.length > 0) {
-    const productName = offers[0].ProductName;
-    offersDiv.innerHTML = `Offer:<br>${productName}`;
-    wrapper.appendChild(offersDiv);
   } else {
-    const noOffersDiv = document.createElement("div");
-    noOffersDiv.innerHTML = "No offers available for the specified store ID.";
-    wrapper.appendChild(noOffersDiv);
+    wrapper.innerHTML = "Loading content...";
   }
-}
+
+  if (this.config.settings.offers && this.offers && this.config.offersStoreId) {
+    const offersDiv = document.createElement("div");
+    const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId);
+    if (offers.length > 0) {
+      const productName = offers[0].Articles[0].ArticleDescription;
+      offersDiv.innerHTML = `Offer:<br>${productName}`;
+      wrapper.appendChild(offersDiv);
+    } else {
+      const noOffersDiv = document.createElement("div");
+      noOffersDiv.innerHTML = "No offers available for the specified store ID.";
+      wrapper.appendChild(noOffersDiv);
+    }
+  }
 
   return wrapper;
 },
+
   // Override socket notification handler.
   // Override socket notification handler.
   socketNotificationReceived: function(notification, payload) {
