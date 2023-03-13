@@ -5,7 +5,7 @@ Module.register("MMM-ICA", {
     apiUrl: "",
     storeApiUrl: "",
     updateNotification: "UPDATE_ICA_MODULE",
-    updateInterval: 60 * 60 * 1000, // Update every hour.
+    updateInterval: 10 * 60 * 1000, // Update every 10 minutes.
     retryDelay: 5 * 60 * 1000, // Retry every 5 minutes if an error occurs.
     settings: {
       Saldo: true,
