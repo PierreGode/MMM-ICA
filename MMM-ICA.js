@@ -113,7 +113,8 @@ socketNotificationReceived: function(notification, payload) {
     setTimeout(() => {
       this.getCardAccounts();
     }, this.config.updateInterval);
-  } else if (notification === "CARD_ACCOUNTS_RESULT") {
+  }
+else if (notification === "CARD_ACCOUNTS_RESULT") {
     if (payload.error) {
       console.error(`Error getting card accounts: ${payload.error}`);
       setTimeout(() => {
@@ -138,7 +139,8 @@ socketNotificationReceived: function(notification, payload) {
     setTimeout(() => {
       this.getCardAccounts();
     }, this.config.updateInterval);
-  } else if (notification === "FAVORITE_STORES_RESULT") {
+  }
+else if (notification === "FAVORITE_STORES_RESULT") {
     if (payload.error) {
       console.error(`Error getting favorite stores: ${payload.error}`);
       setTimeout(() => {
@@ -163,6 +165,29 @@ socketNotificationReceived: function(notification, payload) {
     setTimeout(() => {
       this.getFavoriteStores();
     }, this.config.updateInterval);
+  }
+else if (notification === "OFFERS_RESULT") {
+    if (payload.error) {
+      console.error(`Error getting offers: ${payload.error}`);
+      setTimeout(() => {
+        this.getOffers();
+      }, this.config.retryDelay);
+      return;
+    }
+    const offers = payload.offers;
+    if (!offers) {
+      console.error("Error: Unable to retrieve offers.");
+      setTimeout(() => {
+        this.getOffers();
+      }, this.config.retryDelay);
+      return;
+    }
+
+    console.log(`Got offers: ${JSON.stringify(offers)}`);
+    this.offers = offers;
+    this.updateDom();
+
+    // Schedule the
   } else if (notification === "OFFERS_RESULT") {
     if (payload.error) {
       console.error(`Error getting offers: ${payload.error}`);
@@ -171,25 +196,26 @@ socketNotificationReceived: function(notification, payload) {
       }, this.config.retryDelay);
       return;
     }
-const offers = payload.offers;
-if (!offers) {
-  console.error("Error: Unable to retrieve offers.");
-  setTimeout(() => {
-    this.getOffers();
-  }, this.config.retryDelay);
-  return;
-}
 
-console.log(`Got offers: ${JSON.stringify(offers)}`);
-this.offers = offers;
-this.updateDom();
+    const offers = payload.offers;
+    if (!offers) {
+      console.error("Error: Unable to retrieve offers.");
+      setTimeout(() => {
+        this.getOffers();
+      }, this.config.retryDelay);
+      return;
+    }
 
-// Schedule the next call to the offers API.
-setTimeout(() => {
-  this.getOffers();
-}, this.config.updateInterval);
-    } else {
-console.warn(`Unknown socket notification received: ${notification}`);
-}
+    console.log(`Got offers: ${JSON.stringify(offers)}`);
+    this.offers = offers;
+    this.updateDom();
+
+    // Schedule the next call to the offers API.
+    setTimeout(() => {
+      this.getOffers();
+    }, this.config.updateInterval);
+  } else {
+    console.warn(`Unknown socket notification received: ${notification}`);
+  }
 },
 });
