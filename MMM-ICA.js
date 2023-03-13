@@ -48,12 +48,12 @@ getDom: function() {
 
     if (this.config.settings.FavoriteStores && this.favoriteStores) {
       const favoriteStoresDiv = document.createElement("div");
-      const favoriteStores = this.favoriteStores.FavoriteStores.join();
+      const favoriteStores = this.favoriteStores.FavoriteStores.map(store => `${store.StoreId} - ${store.StoreName}`).join(", ");
       favoriteStoresDiv.innerHTML = `Favorite Stores: ${favoriteStores}`;
       wrapper.appendChild(favoriteStoresDiv);
     }
 
-    if (this.config.settings.offers && this.offers && this.config.offersStoreId) {
+    if (this.config.offersStoreId && this.offers) {
       const offersDiv = document.createElement("div");
       const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId);
       if (offers.length > 0) {
@@ -62,16 +62,7 @@ getDom: function() {
           offersDiv.innerHTML += `${offer.ProductName} - ${offer.SizeOrQuantity}<br>`;
         });
         wrapper.appendChild(offersDiv);
-      } else {
-        offersDiv.innerHTML = "No offers available for the specified store ID.";
-        wrapper.appendChild(offersDiv);
       }
-    }
-
-    if (this.config.settings.DisplayStoreID) {
-      const storeIDDiv = document.createElement("div");
-      storeIDDiv.innerHTML = `Store ID: ${this.config.offersStoreId}`;
-      wrapper.appendChild(storeIDDiv);
     }
 
   } else {
@@ -80,6 +71,7 @@ getDom: function() {
 
   return wrapper;
 },
+
 
   // Override socket notification handler.
   socketNotificationReceived: function(notification, payload) {
