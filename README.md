@@ -35,17 +35,20 @@ in MagicMirror/config/config.js
   position: "bottom_right",
   header: "ICA",
   config: {
-    username: "198002140971",
-    password: "586571",
+    username: "",
+    password: "",
     apiUrl: "https://handla.api.ica.se/api/",
     storeApiUrl: "https://handla.api.ica.se/api/",
-    updateInterval: 60 * 60 * 1000, // Update every hour.
+    updateInterval: 900000, // Refresh every 15 minutes.
     retryDelay: 5 * 60 * 1000, // Retry every 5 minutes if an error occurs.
     settings: {
-      Saldo: true,
+      Saldo: true, //Show Availible balance on the account 
       AccountName: false,
-      FavoriteStores: false
-    }
+      FavoriteStores: true, //Show the id of your favorite stores
+      DisplayStoreID: true //Show the output of offersStoreId in the mirror
+    },
+    offers: true, // Show offers for the specified store ID
+    offersStoreId: "15215" // Default store ID for which offers will be displayed
   }
 },
 
