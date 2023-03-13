@@ -59,12 +59,13 @@ getDom: function() {
       if (offers.length > 0) {
         offersDiv.innerHTML = "Offers:<br>";
         offers.forEach(offer => {
-          offersDiv.innerHTML += `${offer.ProductName} - ${offer.Disclaimer}<br>`;
+          offersDiv.innerHTML += `${offer.ProductName} - ${offer.SizeOrQuantity}<br>`;
         });
         wrapper.appendChild(offersDiv);
       } else {
-        offersDiv.innerHTML = "No offers available for the specified store ID.";
-        wrapper.appendChild(offersDiv);
+        const noOffersDiv = document.createElement("div");
+        noOffersDiv.innerHTML = "No offers available for the specified store ID.";
+        wrapper.appendChild(noOffersDiv);
       }
     }
 
