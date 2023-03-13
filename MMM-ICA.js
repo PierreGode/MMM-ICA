@@ -55,7 +55,8 @@ getDom: function() {
 
       if (this.config.settings.offers && this.config.offersStoreId && this.offers) {
         const offersDiv = document.createElement("div");
-        const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId && offer.ProductName === "Kladdkaka");
+        const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId && offer.ProductName === "Kladdkaka").map(offer => `${offer.ProductName} - ${offer.SizeOrQuantity}`).join("<br>");
+        //const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId && offer.ProductName === "Kladdkaka");
         //const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId);
         if (offers.length > 0) {
           offersDiv.innerHTML = "Offers:<br>";
