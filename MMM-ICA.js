@@ -52,6 +52,13 @@ getDom: function() {
         favoriteStoresDiv.innerHTML = `Favorite Stores: ${favoriteStores}`;
         wrapper.appendChild(favoriteStoresDiv);
       }
+      
+            if (this.config.settings.FavoriteStores && this.favoriteStores) {
+        const favoriteStoresDiv = document.createElement("div");
+        const favoriteStores = this.favoriteStores.FavoriteStores.join();
+        favoriteStoresDiv.innerHTML = `Favorite Stores: ${favoriteStores}`;
+        wrapper.appendChild(favoriteStoresDiv);
+      }
 
 if (this.config.settings.offers && this.config.offersStoreId && this.offers) {
   const offersDiv = document.createElement("div");
