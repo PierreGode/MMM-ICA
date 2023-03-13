@@ -81,7 +81,6 @@ getDom: function() {
 
   return wrapper;
 },
-
   // Override socket notification handler.
   socketNotificationReceived: function(notification, payload) {
     console.log("Received socket notification:", notification, "with payload:", payload);
