@@ -53,12 +53,12 @@ getDom: function() {
       wrapper.appendChild(favoriteStoresDiv);
     }
 
-if (this.config.settings.offers && this.offers && this.config.offersStoreId) {
+if (this.offers && this.offers.Offers) {
   const offersDiv = document.createElement("div");
-  const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId.toString());
-  if (offers.length > 0) {
+  const filteredOffers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId.toString());
+  if (filteredOffers.length > 0) {
     offersDiv.innerHTML = "Offers:<br>";
-    offers.forEach(offer => {
+    filteredOffers.forEach(offer => {
       offersDiv.innerHTML += `${JSON.stringify(offer)}<br>`;
     });
     wrapper.appendChild(offersDiv);
@@ -67,7 +67,12 @@ if (this.config.settings.offers && this.offers && this.config.offersStoreId) {
     noOffersDiv.innerHTML = "No offers available for the specified store ID.";
     wrapper.appendChild(noOffersDiv);
   }
+} else {
+  const noOffersDiv = document.createElement("div");
+  noOffersDiv.innerHTML = "No offers available.";
+  wrapper.appendChild(noOffersDiv);
 }
+
 
 
 
