@@ -191,7 +191,8 @@ getOffers: function() {
   console.log("Retrieving offers");
   const options = {
     method: "GET",
-    url: `${this.config.storeApiUrl}/offers?Stores=${this.config.offersStoreId}`,
+    //url: `${this.config.storeApiUrl}/offers?Stores=${this.config.offersStoreId}`,
+    url: `${this.config.storeApiUrl}/offers?Stores=15215`,
     headers: {
       "AuthenticationTicket": this.authTicket
     }
