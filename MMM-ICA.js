@@ -51,33 +51,23 @@ getDom: function() {
       const favoriteStores = this.favoriteStores.FavoriteStores.join();
       favoriteStoresDiv.innerHTML = `Favorite Stores: ${favoriteStores}`;
       wrapper.appendChild(favoriteStoresDiv);
-    }
 
-    if (this.config.offersStoreId && this.cardAccounts && this.cardAccounts.Cards[0].Accounts[0].Stores) {
-      const offersDiv = document.createElement("div");
-      const storeId = this.config.offersStoreId;
-      const store = this.cardAccounts.Cards[0].Accounts[0].Stores.find(s => s.Id === storeId);
-      if (store && store.Offers) {
-        const offers = store.Offers.filter(o => o.Category === 2);
-        if (offers.length > 0) {
-          const offersList = document.createElement("ul");
-          offers.forEach(offer => {
-            const offerItem = document.createElement("li");
-            offerItem.innerHTML = offer.ProductName;
-            offersList.appendChild(offerItem);
-          });
-          offersDiv.appendChild(offersList);
-          wrapper.appendChild(offersDiv);
+      if (this.config.settings.StoreID) {
+        const offers = this.favoriteStores.FavoriteStores.find(store => store.StoreId === parseInt(this.config.settings.StoreID)).Offers;
+        if (offers) {
+          const productNameDiv = document.createElement("div");
+          productNameDiv.innerHTML = `Product Name: ${offers[0].ProductName}`;
+          wrapper.appendChild(productNameDiv);
         }
       }
     }
-
   } else {
     wrapper.innerHTML = "Loading content...";
   }
 
   return wrapper;
-}
+},
+
 
   // Override socket notification handler.
   socketNotificationReceived: function(notification, payload) {
