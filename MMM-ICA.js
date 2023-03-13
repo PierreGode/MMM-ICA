@@ -59,7 +59,7 @@ getDom: function() {
       if (offers.length > 0) {
         offersDiv.innerHTML = "Offers:<br>";
         offers.forEach(offer => {
-          offersDiv.innerHTML += `${offer}<br>`;
+          offersDiv.innerHTML += `${offer.ProductName} - ${offer.SizeOrQuantity}<br>`;
         });
         wrapper.appendChild(offersDiv);
       } else {
