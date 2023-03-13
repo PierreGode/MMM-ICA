@@ -14,21 +14,17 @@ Module.register("MMM-ICA", {
     },
     offersStoreId: "" // Default store ID for which offers will be displayed
   },
-
   start: function() {
     console.log("Module config:", this.config);
     Log.info(`Starting module: ${this.name}`);
-
     if (!this.config.username || !this.config.password) {
       console.error("Error: username or password not provided in module config.");
       this.authTicket = "";
       this.updateDom();
       return;
     }
-
     this.sendSocketNotification("GET_AUTH_TICKET", this.config);
   },
-
 getDom: function() {
   const wrapper = document.createElement("div");
   wrapper.className = "small bright";
@@ -39,20 +35,17 @@ getDom: function() {
       saldoDiv.innerHTML = `Tillgängligt Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Available}`;
       wrapper.appendChild(saldoDiv);
     }
-
     if (this.config.settings.AccountName) {
       const accountNameDiv = document.createElement("div");
       accountNameDiv.innerHTML = `Account Name: ${this.cardAccounts.Cards[0].Accounts[0].AccountName}`;
       wrapper.appendChild(accountNameDiv);
     }
-
     if (this.config.settings.FavoriteStores && this.favoriteStores) {
       const favoriteStoresDiv = document.createElement("div");
       const favoriteStores = this.favoriteStores.FavoriteStores.join();
       favoriteStoresDiv.innerHTML = `Favorite Stores: ${favoriteStores}`;
       wrapper.appendChild(favoriteStoresDiv);
     }
-
     if (this.config.offersStoreId && this.offers) {
       const offersDiv = document.createElement("div");
       const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId);
@@ -64,18 +57,14 @@ getDom: function() {
         wrapper.appendChild(offersDiv);
       }
     }
-
   } else {
     wrapper.innerHTML = "Loading content...";
   }
-
   return wrapper;
 },
-
   // Override socket notification handler.
 socketNotificationReceived: function(notification, payload) {
   console.log("Received socket notification:", notification, "with payload:", payload);
-
   if (notification === "AUTH_TICKET_RESULT") {
     if (payload.error) {
       console.error(`Error getting authentication ticket: ${payload.error}`);
@@ -96,11 +85,9 @@ socketNotificationReceived: function(notification, payload) {
       }, this.config.retryDelay);
       return;
     }
-
     console.log(`Got authentication ticket: ${authTicket}`);
     this.authTicket = authTicket;
     this.updateDom();
-
     // Schedule the first call to the card accounts API.
     setTimeout(() => {
       this.getCardAccounts();
@@ -121,11 +108,9 @@ socketNotificationReceived: function(notification, payload) {
       }, this.config.retryDelay);
       return;
     }
-
     console.log(`Got card accounts: ${JSON.stringify(cardAccounts)}`);
     this.cardAccounts = cardAccounts;
     this.updateDom();
-
     // Schedule the next call to the card accounts API.
     setTimeout(() => {
       this.getCardAccounts();
@@ -146,11 +131,9 @@ socketNotificationReceived: function(notification, payload) {
       }, this.config.retryDelay);
       return;
     }
-
     console.log(`Got favorite stores: ${JSON.stringify(favoriteStores)}`);
     this.favoriteStores = favoriteStores;
     this.updateDom();
-
     // Schedule the next call to the favorite stores API.
     setTimeout(() => {
       this.getFavoriteStores();
@@ -168,23 +151,19 @@ socketNotificationReceived: function(notification, payload) {
       }, this.config.retryDelay);
       return;
     }
-
     console.log(`Got offers: ${JSON.stringify(offers)}`);
     this.offers = offers;
     this.updateDom();
-
     // Schedule the next call to the
-getDom: function() {
-  const wrapper = document.createElement("div");
-  wrapper.className = "small bright";
-
-  if (this.cardAccounts) {
+    getDom: function() {
+    const wrapper = document.createElement("div");
+    wrapper.className = "small bright";
+    if (this.cardAccounts) {
     if (this.config.settings.Saldo) {
       const saldoDiv = document.createElement("div");
       saldoDiv.innerHTML = `Tillgängligt Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Available}`;
       wrapper.appendChild(saldoDiv);
     }
-
     if (this.config.settings.AccountName) {
       const accountNameDiv = document.createElement("div");
       accountNameDiv.innerHTML = `Account Name: ${this.cardAccounts.Cards[0].Accounts[0].AccountName}`;
@@ -197,7 +176,6 @@ getDom: function() {
       favoriteStoresDiv.innerHTML = `Favorite Stores: ${favoriteStores}`;
       wrapper.appendChild(favoriteStoresDiv);
     }
-
     if (this.config.offers && this.offers) {
       const offersDiv = document.createElement("div");
       const storeId = this.config.offers;
@@ -210,11 +188,9 @@ getDom: function() {
         wrapper.appendChild(offersDiv);
       }
     }
-
   } else {
     wrapper.innerHTML = "Loading content...";
   }
-
   return wrapper;
 }
 });
