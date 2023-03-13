@@ -191,7 +191,7 @@ getOffers: function() {
   console.log("Retrieving offers");
   const options = {
     method: "GET",
-    url: `${this.config.apiUrl}/offers?Stores=${this.config.offersStoreId}`,
+    url: `${this.config.storeApiUrl}/offers?Stores=${this.config.offersStoreId}`,
     headers: {
       "AuthenticationTicket": this.authTicket
     }
@@ -199,7 +199,6 @@ getOffers: function() {
 
   this.sendSocketNotification("GET_OFFERS", options);
 },
-
 
 getFavoriteStores: function() {
 console.log("Retrieving favorite stores");
