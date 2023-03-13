@@ -25,7 +25,6 @@ module.exports = NodeHelper.create({
       this.makeRequest(options);
     }
   },
-
   makeRequest: function(options) {
     var self = this;
     request(options, function(error, response, body) {
@@ -56,7 +55,6 @@ module.exports = NodeHelper.create({
       }
     });
   },
-
   makeCardAccountsRequest: function(options) {
     var self = this;
     request(options, function(error, response, body) {
@@ -78,7 +76,6 @@ module.exports = NodeHelper.create({
       }
     });
   },
-
   makeFavoriteStoresRequest: function(options) {
     var self = this;
     request(options, function(error, response, body) {
@@ -86,10 +83,25 @@ module.exports = NodeHelper.create({
         const favoriteStores = JSON.parse(body);
         console.log("Got favorite stores:", favoriteStores);
         self.sendSocketNotification("FAVORITE_STORES_RESULT", { favoriteStores: favoriteStores });
+
+        const offersOptions = {
+          method: "GET",
+          url: `${self.config.apiUrl}/offers/offers`,
+          headers: {
+            "AuthenticationTicket": self.authTicket
+          }
+        };
+        if (self.config.offers) {
+          const storeId = self.config.offers;
+          offersOptions.url = `${offersOptions.url}/store/${storeId}`;
+          console.log(`Retrieving offers for store ${storeId}`);
+        } else {
+          console.log("Retrieving all offers");
+        }
+        self.makeOffersRequest(offersOptions);
       } else {
         console.error(`Error getting favorite stores: ${error}`);
         self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: error });
       }
     });
-  }
-});
+  },
