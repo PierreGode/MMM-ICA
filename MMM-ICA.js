@@ -185,6 +185,19 @@ console.log("Retrieving card accounts");
 
 this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
 },
+  
+getOffers: function() {
+  console.log("Retrieving offers for store ID:", this.config.offersStoreId);
+  const options = {
+    method: "GET",
+    url: `${this.config.apiUrl}/user/offers`,
+    headers: {
+      "AuthenticationTicket": this.authTicket
+    }
+  };
+
+  this.sendSocketNotification("GET_OFFERS", options);
+},
 
 getFavoriteStores: function() {
 console.log("Retrieving favorite stores");
