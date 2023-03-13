@@ -34,8 +34,6 @@ Module.register("MMM-ICA", {
     setInterval(function() {
       self.updateDom();
     }, self.config.refreshInterval);
-  },
-
 
   getDom: function() {
   const wrapper = document.createElement("div");
