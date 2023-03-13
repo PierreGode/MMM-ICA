@@ -50,9 +50,20 @@ in MagicMirror/config/config.js
 },
 
 ```
-
-
-
+For the module to update you need MMM-ModuleScheduler
+https://github.com/ianperrin/MMM-ModuleScheduler
+and in config.js
+```
+{
+      module: "MMM-ModuleScheduler",
+      config: {
+        notification_schedule: [
+          { notification: "UPDATE_ICA_MODULE", schedule: "*/30 * * * *" }, // refresh every 30 minutes
+        ],
+      },
+    },
+```
+<p>
 
 API reference
 For more information on the ICA API, see the ica-api repository. https://github.com/svendahlstrand/ica-api 
