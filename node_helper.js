@@ -105,4 +105,5 @@ makeFavoriteStoresRequest: function(options) {
     }
   });
 },
-
+  }
+});
