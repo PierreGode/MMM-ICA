@@ -53,28 +53,21 @@ getDom: function() {
       wrapper.appendChild(favoriteStoresDiv);
     }
 
-if (this.offers && this.offers.Offers) {
-  const offersDiv = document.createElement("div");
-  const filteredOffers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId.toString());
-  if (filteredOffers.length > 0) {
-    offersDiv.innerHTML = "Offers:<br>";
-    filteredOffers.forEach(offer => {
-      offersDiv.innerHTML += `${JSON.stringify(offer)}<br>`;
-    });
-    wrapper.appendChild(offersDiv);
-  } else {
-    const noOffersDiv = document.createElement("div");
-    noOffersDiv.innerHTML = "No offers available for the specified store ID.";
-    wrapper.appendChild(noOffersDiv);
-  }
-} else {
-  const noOffersDiv = document.createElement("div");
-  noOffersDiv.innerHTML = "No offers available.";
-  wrapper.appendChild(noOffersDiv);
-}
-
-
-
+    if (this.config.settings.offers && this.offers && this.config.offersStoreId) {
+      const offersDiv = document.createElement("div");
+      const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId);
+      if (offers.length > 0) {
+        offersDiv.innerHTML = "Offers:<br>";
+        offers.forEach(offer => {
+          offersDiv.innerHTML += `${offer}<br>`;
+        });
+        wrapper.appendChild(offersDiv);
+      } else {
+        const noOffersDiv = document.createElement("div");
+        noOffersDiv.innerHTML = "No offers available for the specified store ID.";
+        wrapper.appendChild(noOffersDiv);
+      }
+    }
 
     if (this.config.settings.DisplayStoreID) {
       const storeIDDiv = document.createElement("div");
