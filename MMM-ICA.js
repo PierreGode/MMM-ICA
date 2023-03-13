@@ -1,18 +1,19 @@
 Module.register("MMM-ICA", {
-  defaults: {
-    username: "",
-    password: "",
-    apiUrl: "",
-    storeApiUrl: "",
-    updateNotification: "UPDATE_ICA_MODULE",
-    updateInterval: 60 * 60 * 1000, // Update every hour.
-    retryDelay: 5 * 60 * 1000, // Retry every 5 minutes if an error occurs.
-    settings: {
-      Saldo: true,
-      AccountName: true,
-      FavoriteStores: true
-    }
+defaults: {
+  username: "",
+  password: "",
+  apiUrl: "",
+  storeApiUrl: "",
+  updateNotification: "UPDATE_ICA_MODULE",
+  updateInterval: 60 * 60 * 1000, // Update every hour.
+  retryDelay: 5 * 60 * 1000, // Retry every 5 minutes if an error occurs.
+  settings: {
+    Saldo: true,
+    AccountName: true,
+    FavoriteStores: true
   },
+  offersStoreId: 0 // Default value
+}
 
   start: function() {
     console.log("Module config:", this.config);
