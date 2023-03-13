@@ -189,7 +189,7 @@ setTimeout(() => {
   this.getOffers();
 }, this.config.updateInterval);
     } else {
-console.warn(Unknown socket notification received: ${notification});
+console.warn(`Unknown socket notification received: ${notification}`);
 }
 },
 });
