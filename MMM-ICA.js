@@ -154,15 +154,7 @@ Module.register("MMM-ICA", {
     this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
   },
 
-  getFavoriteStores: function() {
-    console.log("Retrieving favorite stores");
-    const options = {
-      method: "GET",
-      url: `${this.config.storeApiUrl}/user/stores`,
-      headers: {
-        "AuthenticationTicket": this.authTicket
-      }
-    };
+
 
     this.sendSocketNotification("GET_FAVORITE_STORES", options);
   }
