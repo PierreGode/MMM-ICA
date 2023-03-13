@@ -53,26 +53,27 @@ getDom: function() {
       wrapper.appendChild(favoriteStoresDiv);
     }
 
-    if (this.config.settings.offers && this.config.offersStoreId && this.offers && this.offers.Offers.length > 0) {
+    if (this.config.settings.offers && this.offers && this.config.offersStoreId) {
       const offersDiv = document.createElement("div");
-      offersDiv.innerHTML = `MY Offers:`;
-
-      const offersList = document.createElement("ul");
-      offersList.className = "small";
-
-      this.offers.Offers.forEach(offer => {
-        if (offer.StoreId === this.config.offersStoreId) {
-          const offerItem = document.createElement("li");
-          offerItem.innerHTML = `${offer.ProductName} - ${offer.SizeOrQuantity}`;
-          offersList.appendChild(offerItem);
-        }
-      });
-
-      if (offersList.childNodes.length > 0) {
-        offersDiv.appendChild(offersList);
+      const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId);
+      if (offers.length > 0) {
+        offersDiv.innerHTML = "Offers:<br>";
+        offers.forEach(offer => {
+          offersDiv.innerHTML += `${offer.ProductName} - ${offer.SizeOrQuantity}<br>`;
+        });
+        wrapper.appendChild(offersDiv);
+      } else {
+        offersDiv.innerHTML = "No offers available for the specified store ID.";
         wrapper.appendChild(offersDiv);
       }
     }
+
+    if (this.config.settings.DisplayStoreID) {
+      const storeIDDiv = document.createElement("div");
+      storeIDDiv.innerHTML = `Store ID: ${this.config.offersStoreId}`;
+      wrapper.appendChild(storeIDDiv);
+    }
+
   } else {
     wrapper.innerHTML = "Loading content...";
   }
@@ -81,141 +82,120 @@ getDom: function() {
 },
 
   // Override socket notification handler.
-socketNotificationReceived: function(notification, payload) {
-  console.log("Received socket notification:", notification, "with payload:", payload);
+  socketNotificationReceived: function(notification, payload) {
+    console.log("Received socket notification:", notification, "with payload:", payload);
 
-  if (notification === "AUTH_TICKET_RESULT") {
-    if (payload.error) {
-      console.error(`Error getting authentication ticket: ${payload.error}`);
-      this.authTicket = "";
+    if (notification === "AUTH_TICKET_RESULT") {
+      if (payload.error) {
+        console.error(`Error getting authentication ticket: ${payload.error}`);
+        this.authTicket = "";
+        this.updateDom();
+        setTimeout(() => {
+          this.sendSocketNotification("GET_AUTH_TICKET", this.config);
+        }, this.config.retryDelay);
+        return;
+      }
+
+      const authTicket = payload.authTicket;
+      if (!authTicket) {
+        console.error("Error: Unable to retrieve authentication ticket.");
+        this.authTicket = "";
+        this.updateDom();
+        setTimeout(() => {
+          this.sendSocketNotification("GET_AUTH_TICKET", this.config);
+        }, this.config.retryDelay);
+        return;
+      }
+
+      console.log(`Got authentication ticket: ${authTicket}`);
+      this.authTicket = authTicket;
       this.updateDom();
-      setTimeout(() => {
-        this.sendSocketNotification("GET_AUTH_TICKET", this.config);
-      }, this.config.retryDelay);
-      return;
-    }
-    const authTicket = payload.authTicket;
-    if (!authTicket) {
-      console.error("Error: Unable to retrieve authentication ticket.");
-      this.authTicket = "";
-      this.updateDom();
-      setTimeout(() => {
-        this.sendSocketNotification("GET_AUTH_TICKET", this.config);
-      }, this.config.retryDelay);
-      return;
-    }
 
-    console.log(`Got authentication ticket: ${authTicket}`);
-    this.authTicket = authTicket;
-    this.updateDom();
-
-    // Schedule the first call to the card accounts API.
-    setTimeout(() => {
-      this.getCardAccounts();
-    }, this.config.updateInterval);
-  }
-else if (notification === "CARD_ACCOUNTS_RESULT") {
-    if (payload.error) {
-      console.error(`Error getting card accounts: ${payload.error}`);
+      // Schedule the first call to the card accounts API.
       setTimeout(() => {
         this.getCardAccounts();
-      }, this.config.retryDelay);
-      return;
-    }
-    const cardAccounts = payload.cardAccounts;
-    if (!cardAccounts) {
-      console.error("Error: Unable to retrieve card accounts.");
-      setTimeout(() => {
-        this.getCardAccounts();
-      }, this.config.retryDelay);
-      return;
-    }
+      }, this.config.updateInterval);
+    } else if (notification === "CARD_ACCOUNTS_RESULT") {
+      if (payload.error) {
+        console.error(`Error getting card accounts: ${payload.error}`);
+        setTimeout(() => {
+          this.getCardAccounts();
+        }, this.config.retryDelay);
+        return;
+      }
 
-    console.log(`Got card accounts: ${JSON.stringify(cardAccounts)}`);
-    this.cardAccounts = cardAccounts;
-    this.updateDom();
+      const cardAccounts = payload.cardAccounts;
+      if (!cardAccounts) {
+        console.error("Error: Unable to retrieve card accounts.");
+        setTimeout(() => {
+          this.getCardAccounts();
+        }, this.config.retryDelay);
+        return;
+      }
 
-    // Schedule the next call to the card accounts API.
-    setTimeout(() => {
-      this.getCardAccounts();
-    }, this.config.updateInterval);
-  }
-else if (notification === "FAVORITE_STORES_RESULT") {
-    if (payload.error) {
-      console.error(`Error getting favorite stores: ${payload.error}`);
-      setTimeout(() => {
-        this.getFavoriteStores();
-      }, this.config.retryDelay);
-      return;
-    }
-    const favoriteStores = payload.favoriteStores;
-    if (!favoriteStores) {
-      console.error("Error: Unable to retrieve favorite stores.");
-      setTimeout(() => {
-        this.getFavoriteStores();
-      }, this.config.retryDelay);
-      return;
-    }
+      console.log
+  (`Got card accounts: ${JSON.stringify(cardAccounts)}`);
+  this.cardAccounts = cardAccounts;
+  this.updateDom();
 
-    console.log(`Got favorite stores: ${JSON.stringify(favoriteStores)}`);
-    this.favoriteStores = favoriteStores;
-    this.updateDom();
-
-    // Schedule the next call to the favorite stores API.
+  // Schedule the next call to the card accounts API.
+  setTimeout(() => {
+    this.getCardAccounts();
+  }, this.config.updateInterval);
+} else if (notification === "FAVORITE_STORES_RESULT") {
+  if (payload.error) {
+    console.error(`Error getting favorite stores: ${payload.error}`);
     setTimeout(() => {
       this.getFavoriteStores();
-    }, this.config.updateInterval);
+    }, this.config.retryDelay);
+    return;
   }
-else if (notification === "OFFERS_RESULT") {
-    if (payload.error) {
-      console.error(`Error getting offers: ${payload.error}`);
-      setTimeout(() => {
-        this.getOffers();
-      }, this.config.retryDelay);
-      return;
-    }
-    const offers = payload.offers;
-    if (!offers) {
-      console.error("Error: Unable to retrieve offers.");
-      setTimeout(() => {
-        this.getOffers();
-      }, this.config.retryDelay);
-      return;
-    }
 
-    console.log(`Got offers: ${JSON.stringify(offers)}`);
-    this.offers = offers;
-    this.updateDom();
-
-    // Schedule the
-  } else if (notification === "OFFERS_RESULT") {
-    if (payload.error) {
-      console.error(`Error getting offers: ${payload.error}`);
-      setTimeout(() => {
-        this.getOffers();
-      }, this.config.retryDelay);
-      return;
-    }
-
-    const offers = payload.offers;
-    if (!offers) {
-      console.error("Error: Unable to retrieve offers.");
-      setTimeout(() => {
-        this.getOffers();
-      }, this.config.retryDelay);
-      return;
-    }
-
-    console.log(`Got offers: ${JSON.stringify(offers)}`);
-    this.offers = offers;
-    this.updateDom();
-
-    // Schedule the next call to the offers API.
+  const favoriteStores = payload.favoriteStores;
+  if (!favoriteStores) {
+    console.error("Error: Unable to retrieve favorite stores.");
     setTimeout(() => {
-      this.getOffers();
-    }, this.config.updateInterval);
-  } else {
-    console.warn(`Unknown socket notification received: ${notification}`);
+      this.getFavoriteStores();
+    }, this.config.retryDelay);
+    return;
   }
+
+  console.log(`Got favorite stores: ${JSON.stringify(favoriteStores)}`);
+  this.favoriteStores = favoriteStores;
+  this.updateDom();
+
+  // Schedule the next call to the favorite stores API.
+  setTimeout(() => {
+    this.getFavoriteStores();
+  }, this.config.updateInterval);
+} else {
+  console.warn(`Unknown socket notification received: ${notification}`);
+}
 },
+
+getCardAccounts: function() {
+console.log("Retrieving card accounts");
+  const options = {
+  method: "GET",
+  url: `${this.config.apiUrl}/user/cardaccounts`,
+  headers: {
+    "AuthenticationTicket": this.authTicket
+  }
+};
+
+this.sendSocketNotification("GET_CARD_ACCOUNTS", options);
+},
+
+getFavoriteStores: function() {
+console.log("Retrieving favorite stores");
+  const options = {
+  method: "GET",
+  url: `${this.config.storeApiUrl}/user/stores`,
+  headers: {
+    "AuthenticationTicket": this.authTicket
+  }
+};
+
+this.sendSocketNotification("GET_FAVORITE_STORES", options);
+}
 });
