@@ -76,6 +76,19 @@ module.exports = NodeHelper.create({
       }
     });
   },
+makeOffersRequest: function(options) {
+  var self = this;
+  request(options, function(error, response, body) {
+    if (!error && response.statusCode === 200) {
+      const offers = JSON.parse(body);
+      console.log("Got offers:", offers);
+      self.sendSocketNotification("OFFERS_RESULT", { offers: offers });
+    } else {
+      console.error(`Error getting offers: ${error}`);
+      self.sendSocketNotification("OFFERS_RESULT", { error: error });
+    }
+  });
+},
 makeFavoriteStoresRequest: function(options) {
   var self = this;
   request(options, function(error, response, body) {
