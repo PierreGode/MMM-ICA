@@ -29,7 +29,7 @@ Module.register("MMM-ICA", {
     this.sendSocketNotification("GET_AUTH_TICKET", this.config);
   },
 
-ggetDom: function() {
+getDom: function() {
   const wrapper = document.createElement("div");
   wrapper.className = "small bright";
 
