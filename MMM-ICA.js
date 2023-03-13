@@ -53,12 +53,11 @@ getDom: function() {
       wrapper.appendChild(favoriteStoresDiv);
     }
 
-    if (this.config.offers && this.offers) {
+    if (this.config.offersStoreId && this.offers) {
       const offersDiv = document.createElement("div");
-      const storeId = this.config.offers;
-      const offers = this.offers.Offers.filter(offer => offer.StoreId === storeId);
+      const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId);
       if (offers.length > 0) {
-        offersDiv.innerHTML = `Offers for Store ID ${storeId}:<br>`;
+        offersDiv.innerHTML = "Offers:<br>";
         offers.forEach(offer => {
           offersDiv.innerHTML += `${offer.ProductName} - ${offer.SizeOrQuantity}<br>`;
         });
