@@ -94,7 +94,6 @@ socketNotificationReceived: function(notification, payload) {
       }, this.config.retryDelay);
       return;
     }
-
     const authTicket = payload.authTicket;
     if (!authTicket) {
       console.error("Error: Unable to retrieve authentication ticket.");
@@ -122,7 +121,6 @@ socketNotificationReceived: function(notification, payload) {
       }, this.config.retryDelay);
       return;
     }
-
     const cardAccounts = payload.cardAccounts;
     if (!cardAccounts) {
       console.error("Error: Unable to retrieve card accounts.");
@@ -148,7 +146,6 @@ socketNotificationReceived: function(notification, payload) {
       }, this.config.retryDelay);
       return;
     }
-
     const favoriteStores = payload.favoriteStores;
     if (!favoriteStores) {
       console.error("Error: Unable to retrieve favorite stores.");
@@ -174,27 +171,25 @@ socketNotificationReceived: function(notification, payload) {
       }, this.config.retryDelay);
       return;
     }
+const offers = payload.offers;
+if (!offers) {
+  console.error("Error: Unable to retrieve offers.");
+  setTimeout(() => {
+    this.getOffers();
+  }, this.config.retryDelay);
+  return;
+}
 
-    const offers = payload.offers;
-    if (!offers) {
-      console.error("Error: Unable to retrieve offers.");
-      setTimeout(() => {
-        this.getOffers();
-      }, this.config.retryDelay);
-      return;
-    }
+console.log(`Got offers: ${JSON.stringify(offers)}`);
+this.offers = offers;
+this.updateDom();
 
-    console.log(`Got offers: ${JSON.stringify(offers)}`);
-    this.offers = offers;
-    this.updateDom();
-
-    // Schedule the next call to the offers API.
-    setTimeout(() => {
-      this.getOffers();
-    }, this.config.updateInterval);
-  } else {
-    console.warn(`Unknown socket notification received: ${notification}`);
-  }
+// Schedule the next call to the offers API.
+setTimeout(() => {
+  this.getOffers();
+}, this.config.updateInterval);
+    } else {
+console.warn(Unknown socket notification received: ${notification});
+}
 },
-
 });
