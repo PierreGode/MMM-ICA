@@ -113,8 +113,7 @@ Module.register("MMM-ICA", {
 
       // Schedule the first call to the card accounts API.
       setTimeout(() => {
-        this.getCardAccounts();
-      }, this.config.updateInterval);
+      setTimeout(this.getCardAccounts.bind(this), this.config.updateInterval);
     } else if (notification === "CARD_ACCOUNTS_RESULT") {
       if (payload.error) {
         console.error(`Error getting card accounts: ${payload.error}`);
