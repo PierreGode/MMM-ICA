@@ -138,9 +138,7 @@ Module.register("MMM-ICA", {
       this.updateDom();
 
       // Schedule the next call to the card accounts API.
-      setTimeout(() => {
-        this.getCardAccounts();
-      }, this.config.updateInterval);
+      this.getCardAccounts();
     } else if (notification === "FAVORITE_STORES_RESULT") {
       if (payload.error) {
         console.error(`Error getting favorite stores: ${payload.error}`);
