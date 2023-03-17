@@ -104,13 +104,14 @@ makeOffersRequest: function(options) {
             "AuthenticationTicket": self.authTicket
           }
         };
-        if (self.config.offers) {
-          const storeId = self.config.offers;
-          offersOptions.url = `${offersOptions.url}/store/${storeId}`;
-          console.log(`Retrieving offers for store ${storeId}`);
-        } else {
-          console.log("Retrieving all offers");
-        }
+if (self.config.offersStoreId) {
+  const storeId = self.config.offersStoreId;
+  offersOptions.url = `${offersOptions.url}/store/${storeId}`;
+  console.log(`Retrieving offers for store ${storeId}`);
+} else {
+  console.log("Retrieving all offers");
+}
+
         self.makeOffersRequest(offersOptions);
       } else {
         console.error(`Error getting favorite stores: ${error}`);
