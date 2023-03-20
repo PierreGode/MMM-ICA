@@ -11,7 +11,8 @@ Module.register("MMM-ICA", {
       Saldo: true,
       AccountName: true,
       FavoriteStores: true,
-      DisplayStoreID: true // Add this line to include the setting
+      offers: true, // Add this line to enable the offers feature
+      DisplayStoreID: true, // Add this line to include the setting
     },
     offersStoreId: "" // Default store ID for which offers will be displayed
   },
@@ -28,7 +29,7 @@ Module.register("MMM-ICA", {
 
     this.sendSocketNotification("GET_AUTH_TICKET", this.config);
   },
-getDom: function() {
+  getDom: function() {
     const wrapper = document.createElement("div");
     wrapper.className = "small bright";
 
@@ -62,9 +63,9 @@ getDom: function() {
       wrapper.innerHTML = "Loading content...";
     }
 
-    if (this.config.settings.offers && this.offers && this.config.offersStoreId) {
+    if (this.config.offers && this.offers && this.config.offersStoreId) {
       const offersDiv = document.createElement("div");
-      const offers = this.offers.Offers.filter(offer => offer.StoreId === this.config.offersStoreId);
+      const offers = this.offers.Offers.filter(offer => offer.StoreId.toString() === this.config.offersStoreId);
       if (offers.length > 0) {
         const productName = offers[0].ArticleDescription;
         offersDiv.innerHTML = `Offer:<br>${productName}`;
@@ -78,6 +79,7 @@ getDom: function() {
 
     return wrapper;
   },
+  
 // Override socket notification handler.
 socketNotificationReceived: function(notification, payload) {
   console.log("Received socket notification:", notification, "with payload:", payload);
@@ -93,7 +95,7 @@ socketNotificationReceived: function(notification, payload) {
       return;
     }
 
-    const authTicket = payload.authTicket;
+    const authTicket = payload.authenticationTicket;
     if (!authTicket) {
       console.error("Error: Unable to retrieve authentication ticket.");
       this.authTicket = "";
@@ -161,9 +163,10 @@ socketNotificationReceived: function(notification, payload) {
     this.updateDom(); // Update the DOM
 
     // Schedule the next call to the favorite stores API.
-    setTimeout(() => {
-      this.getFavoriteStores();
+   setTimeout(() => {
+    this.sendSocketNotification("GET_FAVORITE_STORES", this.config);
     }, this.config.updateInterval);
+
   } else if (notification === "OFFERS_RESULT") {
     if (payload.error) {
       console.error(`Error getting offers: ${payload.error}`);
@@ -188,9 +191,9 @@ socketNotificationReceived: function(notification, payload) {
 
     // Schedule the next call to the offers API.
     setTimeout(() => {
-      this.getOffers();
+      this.sendSocketNotification("GET_OFFERS", this.config);
     }, this.config.updateInterval);
-  } else {
+     } else {
     console.warn(`Unknown socket notification received: ${notification}`);
   }
 },
