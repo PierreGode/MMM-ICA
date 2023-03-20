@@ -25,46 +25,38 @@ module.exports = NodeHelper.create({
       this.makeRequest(options);
     }
   },
+makeRequest: function(options) {
+  var self = this;
+  request(options, function(error, response, body) {
+    if (!error && response.statusCode === 200) {
+      const authTicket = response.headers["authenticationticket"];
+      console.log(response.headers); // Add this line
+      if (!authTicket) {
+        console.error("Error: Unable to retrieve authentication ticket.");
+        self.sendSocketNotification("AUTH_TICKET_RESULT", { error: "Unable to retrieve authentication ticket." });
+        return;
+      }
 
-  makeRequest: function(options) {
-    var self = this;
-    request(options, function(error, response, body) {
-      if (!error && response.statusCode === 200) {
-        const authTicket = response.headers["authenticationticket"];
-        console.log(response.headers); // Add this line
-        if (!authTicket) {
-          console.error("Error: Unable to retrieve authentication ticket.");
-          self.sendSocketNotification("AUTH_TICKET_RESULT", { error: "Unable to retrieve authentication ticket." });
-          return;
-        }
+      console.log(`Got authentication ticket: ${authTicket}`);
+      self.authTicket = authTicket;
 
-        console.log(`Got authentication ticket: ${authTicket}`);
-        self.authTicket = authTicket;
+      // Call makeCardAccountsRequest immediately
+      self.makeCardAccountsRequest();
 
-        // Call makeCardAccountsRequest immediately
+      // Call makeCardAccountsRequest every minute
+      setInterval(() => {
         self.makeCardAccountsRequest();
+      }, 60000);
 
-        // Call makeCardAccountsRequest every minute
-        setInterval(() => {
-          self.makeCardAccountsRequest();
-        }, 60000);
+    } else {
+      console.error(`Error getting authentication ticket: ${error}`);
+      self.sendSocketNotification("AUTH_TICKET_RESULT", { error: error });
+    }
+  });
+},
 
-      } else {
-        console.error(`Error getting authentication ticket: ${error}`);
-        self.sendSocketNotification("AUTH_TICKET_RESULT", { error: error });
-      }
-    });
-  },
-
-  makeCardAccountsRequest: function() {
+makeCardAccountsRequest: function(options) {
     var self = this;
-    const options = {
-      method: "GET",
-      url: `${self.config.apiUrl}/accounts`,
-      headers: {
-        "AuthenticationTicket": self.authTicket
-      }
-    };
     request(options, function(error, response, body) {
       if (!error && response.statusCode === 200) {
         const cardAccounts = JSON.parse(body);
@@ -84,22 +76,20 @@ module.exports = NodeHelper.create({
       }
     });
   },
-
-  makeOffersRequest: function(options) {
-    var self = this;
-    request(options, function(error, response, body) {
-      if (!error && response.statusCode === 200) {
-        const offers = JSON.parse(body);
-        console.log("Got offers:", offers);
-        self.sendSocketNotification("OFFERS_RESULT", { offers: offers });
-      } else {
-        console.error(`Error getting offers: ${error}`);
-        self.sendSocketNotification("OFFERS_RESULT", { error: error });
-      }
-    });
-  },
-
-makeFavoriteStoresRequest: function(options) {
+makeOffersRequest: function(options) {
+  var self = this;
+  request(options, function(error, response, body) {
+    if (!error && response.statusCode === 200) {
+      const offers = JSON.parse(body);
+      console.log("Got offers:", offers);
+      self.sendSocketNotification("OFFERS_RESULT", { offers: offers });
+    } else {
+      console.error(`Error getting offers: ${error}`);
+      self.sendSocketNotification("OFFERS_RESULT", { error: error });
+    }
+  });
+},
+  makeFavoriteStoresRequest: function(options) {
     var self = this;
     request(options, function(error, response, body) {
       if (!error && response.statusCode === 200) {
@@ -109,29 +99,18 @@ makeFavoriteStoresRequest: function(options) {
 
         const offersOptions = {
           method: "GET",
-          url: `${self.config.storeApiUrl}/offers`,
+          url: `${self.config.storeApiUrl}/offers?Stores=${self.config.offersStoreId}`,
           headers: {
             "AuthenticationTicket": self.authTicket
           }
         };
-
-        if (self.config.offersStoreId) {
-          offersOptions.url += `?Stores=${self.config.offersStoreId}`;
-          console.log(`Retrieving offers for store ${self.config.offersStoreId}`);
-        } else {
-          console.log("Retrieving all offers");
-        }
-        
-              console.log(`Got authentication ticket: ${authTicket}`);
-      self.authTicket = authTicket;
-
-      // Call makeCardAccountsRequest immediately
-      self.makeCardAccountsRequest();
-
-      // Call makeCardAccountsRequest every minute
-      setInterval(() => {
-        self.makeCardAccountsRequest();
-      }, 60000);
+if (self.config.offersStoreId) {
+  const storeId = self.config.offersStoreId;
+  offersOptions.url = `${offersOptions.url}/store/${storeId}`;
+  console.log(`Retrieving offers for store ${storeId}`);
+} else {
+  console.log("Retrieving all offers");
+}
 
         self.makeOffersRequest(offersOptions);
       } else {
@@ -140,5 +119,4 @@ makeFavoriteStoresRequest: function(options) {
       }
     });
   }
-
 });
