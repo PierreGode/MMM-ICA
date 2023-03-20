@@ -89,34 +89,26 @@ makeOffersRequest: function(options) {
     }
   });
 },
-  makeFavoriteStoresRequest: function(options) {
-    var self = this;
-    request(options, function(error, response, body) {
-      if (!error && response.statusCode === 200) {
-        const favoriteStores = JSON.parse(body);
-        console.log("Got favorite stores:", favoriteStores);
-        self.sendSocketNotification("FAVORITE_STORES_RESULT", { favoriteStores: favoriteStores });
+makeFavoriteStoresRequest: function(options) {
+  var self = this;
+  request(options, function(error, response, body) {
+    if (!error && response.statusCode === 200) {
+      const favoriteStores = JSON.parse(body);
+      console.log("Got favorite stores:", favoriteStores);
+      self.sendSocketNotification("FAVORITE_STORES_RESULT", { favoriteStores: favoriteStores });
 
-        const offersOptions = {
-          method: "GET",
-          url: `${self.config.storeApiUrl}/offers?Stores=${self.config.offersStoreId}`,
-          headers: {
-            "AuthenticationTicket": self.authTicket
-          }
-        };
-if (self.config.offersStoreId) {
-  const storeId = self.config.offersStoreId;
-  offersOptions.url = `${offersOptions.url}/store/${storeId}`;
-  console.log(`Retrieving offers for store ${storeId}`);
-} else {
-  console.log("Retrieving all offers");
-}
+      // Call makeOffersRequest immediately
+      self.makeOffersRequest();
 
-        self.makeOffersRequest(offersOptions);
-      } else {
-        console.error(`Error getting favorite stores: ${error}`);
-        self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: error });
-      }
-    });
-  }
+      // Call makeOffersRequest every minute
+      setInterval(() => {
+        self.makeOffersRequest();
+      }, 60000);
+
+    } else {
+      console.error(`Error getting favorite stores: ${error}`);
+      self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: error });
+    }
+  });
+},
 });
