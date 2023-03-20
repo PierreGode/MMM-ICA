@@ -90,25 +90,45 @@ makeOffersRequest: function(options) {
   });
 },
 makeFavoriteStoresRequest: function(options) {
-  var self = this;
-  request(options, function(error, response, body) {
-    if (!error && response.statusCode === 200) {
-      const favoriteStores = JSON.parse(body);
-      console.log("Got favorite stores:", favoriteStores);
-      self.sendSocketNotification("FAVORITE_STORES_RESULT", { favoriteStores: favoriteStores });
+    var self = this;
+    request(options, function(error, response, body) {
+      if (!error && response.statusCode === 200) {
+        const favoriteStores = JSON.parse(body);
+        console.log("Got favorite stores:", favoriteStores);
+        self.sendSocketNotification("FAVORITE_STORES_RESULT", { favoriteStores: favoriteStores });
 
-      // Call makeOffersRequest immediately
-      self.makeOffersRequest();
+        const offersOptions = {
+          method: "GET",
+          url: `${self.config.storeApiUrl}/offers`,
+          headers: {
+            "AuthenticationTicket": self.authTicket
+          }
+        };
 
-      // Call makeOffersRequest every minute
+        if (self.config.offersStoreId) {
+          offersOptions.url += `?Stores=${self.config.offersStoreId}`;
+          console.log(`Retrieving offers for store ${self.config.offersStoreId}`);
+        } else {
+          console.log("Retrieving all offers");
+        }
+        
+              console.log(`Got authentication ticket: ${authTicket}`);
+      self.authTicket = authTicket;
+
+      // Call makeCardAccountsRequest immediately
+      self.makeCardAccountsRequest();
+
+      // Call makeCardAccountsRequest every minute
       setInterval(() => {
-        self.makeOffersRequest();
+        self.makeCardAccountsRequest();
       }, 60000);
 
-    } else {
-      console.error(`Error getting favorite stores: ${error}`);
-      self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: error });
-    }
-  });
-},
+        self.makeOffersRequest(offersOptions);
+      } else {
+        console.error(`Error getting favorite stores: ${error}`);
+        self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: error });
+      }
+    });
+  }
+
 });
