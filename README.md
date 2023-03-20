@@ -46,6 +46,7 @@ in MagicMirror/config/config.js
       AccountName: false,
       FavoriteStores: true, //Show the id of your favorite stores
       DisplayStoreID: true //Show the output of offersStoreId in the mirror
+      offlineShoppingLists: true, // enable/disable offline shopping lists feature
     },
     offers: true, // Show offers for the specified store ID
     offersStoreId: "15215" // Default store ID for which offers will be displayed
