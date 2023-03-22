@@ -30,56 +30,69 @@ Module.register("MMM-ICA", {
 
     this.sendSocketNotification("GET_AUTH_TICKET", this.config);
   },
+
 getDom: function() {
-    const wrapper = document.createElement("div");
-    wrapper.className = "small bright";
+  const wrapper = document.createElement("div");
+  wrapper.className = "small bright";
 
-    if (this.cardAccounts) {
-      if (this.config.settings.Saldo) {
-        const saldoDiv = document.createElement("div");
-        saldoDiv.innerHTML = `Tillgängligt Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Available}`;
-        wrapper.appendChild(saldoDiv);
-      }
-
-      if (this.config.settings.AccountName) {
-        const accountNameDiv = document.createElement("div");
-        accountNameDiv.innerHTML = `Account Name: ${this.cardAccounts.Cards[0].Accounts[0].AccountName}`;
-        wrapper.appendChild(accountNameDiv);
-      }
-
-      if (this.config.settings.FavoriteStores && this.favoriteStores) {
-        const favoriteStoresDiv = document.createElement("div");
-        const favoriteStores = this.favoriteStores.FavoriteStores.join();
-        favoriteStoresDiv.innerHTML = `Favorite Stores: ${favoriteStores}`;
-        wrapper.appendChild(favoriteStoresDiv);
-      }
-
-      if (this.config.settings.DisplayStoreID) {
-        const storeIDDiv = document.createElement("div");
-        storeIDDiv.innerHTML = `Store ID: ${this.config.offersStoreId}`;
-        wrapper.appendChild(storeIDDiv);
-      }
-
-    } else {
-      wrapper.innerHTML = "Loading content...";
+  if (this.cardAccounts) {
+    if (this.config.settings.Saldo) {
+      const saldoDiv = document.createElement("div");
+      saldoDiv.innerHTML = `Tillgängligt Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Available}`;
+      wrapper.appendChild(saldoDiv);
     }
 
-    if (this.config.offers && this.offers && this.config.offersStoreId) {
+    if (this.config.settings.AccountName) {
+      const accountNameDiv = document.createElement("div");
+      accountNameDiv.innerHTML = `Account Name: ${this.cardAccounts.Cards[0].Accounts[0].AccountName}`;
+      wrapper.appendChild(accountNameDiv);
+    }
+
+    if (this.config.settings.FavoriteStores && this.favoriteStores) {
+      const favoriteStoresDiv = document.createElement("div");
+      const favoriteStores = this.favoriteStores.FavoriteStores.join();
+      favoriteStoresDiv.innerHTML = `Favorite Stores: ${favoriteStores}`;
+      wrapper.appendChild(favoriteStoresDiv);
+    }
+
+    if (this.config.settings.DisplayStoreID) {
+      const storeIDDiv = document.createElement("div");
+      storeIDDiv.innerHTML = `Store ID: ${this.config.offersStoreId}`;
+      wrapper.appendChild(storeIDDiv);
+    }
+
+  } else {
+    wrapper.innerHTML = "Loading content...";
+  }
+
+if (this.config.offers && this.config.offersStoreId) {
+  fetch(`https://handla.api.ica.se/api/offers?Stores=${this.config.offersStoreId}&Fields=Offers&Select=ProductName`)
+    .then(response => response.json())
+    .then(data => {
       const offersDiv = document.createElement("div");
-      const offers = this.offers.Offers.filter(offer => offer.StoreId.toString() === this.config.offersStoreId);
-      if (offers.length > 0) {
-        const productName = offers[0].ArticleDescription;
-        offersDiv.innerHTML = `Offer:<br>${productName}`;
+      const offers = data.Offers;
+      const filteredOffers = offers.filter(offer => offer.StoreId.toString() === this.config.offersStoreId);
+      if (filteredOffers.length > 0) {
+        offersDiv.innerHTML = `Offer:<br>${filteredOffers[0].ProductName}`;
         wrapper.appendChild(offersDiv);
       } else {
         const noOffersDiv = document.createElement("div");
         noOffersDiv.innerHTML = "No offers available for the specified store ID.";
         wrapper.appendChild(noOffersDiv);
       }
-    }
+    })
+    .catch(error => {
+      console.error(error);
+      const errorDiv = document.createElement("div");
+      errorDiv.innerHTML = "An error occurred while retrieving the offers.";
+      wrapper.appendChild(errorDiv);
+    });
+}
 
-    return wrapper;
-  },
+
+  return wrapper;
+},
+
 
   // Override socket notification handler.
 socketNotificationReceived: function(notification, payload) {
