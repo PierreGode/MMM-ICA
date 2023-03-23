@@ -17,19 +17,25 @@ Module.register("MMM-ICA", {
     offersStoreId: "" // Default store ID for which offers will be displayed
   },
 
-  start: function() {
-    console.log("Module config:", this.config);
-    Log.info(`Starting module: ${this.name}`);
+start: function() {
+  console.log("Module config:", this.config);
+  Log.info(`Starting module: ${this.name}`);
 
-    if (!this.config.username || !this.config.password) {
-      console.error("Error: username or password not provided in module config.");
-      this.authTicket = "";
-      this.updateDom();
-      return;
-    }
+  if (!this.config.username || !this.config.password) {
+    console.error("Error: username or password not provided in module config.");
+    this.authTicket = "";
+    this.updateDom();
+    return;
+  }
 
-    this.sendSocketNotification("GET_AUTH_TICKET", this.config);
-  },
+  this.sendSocketNotification("GET_AUTH_TICKET", this.config);
+
+  // Refresh the value periodically
+  setInterval(() => {
+    this.getCardAccounts();
+  }, this.config.updateInterval);
+},
+
 
 getDom: function() {
   const wrapper = document.createElement("div");
@@ -125,13 +131,13 @@ socketNotificationReceived: function(notification, payload) {
     this.updateDom();
 
     // Schedule the first call to the card accounts API.
-    setTimeout(() => {
+    setInterval(() => {
       this.getCardAccounts();
     }, this.config.updateInterval);
   } else if (notification === "CARD_ACCOUNTS_RESULT") {
     if (payload.error) {
       console.error(`Error getting card accounts: ${payload.error}`);
-      setTimeout(() => {
+      setInterval(() => {
         this.getCardAccounts();
       }, this.config.retryDelay);
       return;
@@ -140,7 +146,7 @@ socketNotificationReceived: function(notification, payload) {
     const cardAccounts = payload.cardAccounts;
     if (!cardAccounts) {
       console.error("Error: Unable to retrieve card accounts.");
-      setTimeout(() => {
+      setInterval(() => {
         this.getCardAccounts();
       }, this.config.retryDelay);
       return;
