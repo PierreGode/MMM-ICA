@@ -36,20 +36,6 @@ start: function() {
   }, this.config.updateInterval);
 },
 
-getCardAccounts: function() {
-  const url = `${this.config.apiUrl}/cards/accounts?Authorization=${this.authTicket}&t=${Date.now()}`;
-  fetch(url)
-    .then(response => response.json())
-    .then(data => {
-      this.sendSocketNotification("CARD_ACCOUNTS_RESULT", { cardAccounts: data });
-    })
-    .catch(error => {
-      console.error(error);
-      setInterval(() => {
-        this.getCardAccounts();
-      }, this.config.retryDelay);
-    });
-},
 
 getDom: function() {
   const wrapper = document.createElement("div");
