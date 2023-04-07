@@ -22,6 +22,8 @@ For Authentication you need to use basic authentication, information you can fin
 how to install:
 ```
 cd MagicMirror/modules
+```
+```
 git clone https://github.com/PierreGode/MMM-ICA.git
 
 ```
