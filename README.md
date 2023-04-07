@@ -25,12 +25,8 @@ cd MagicMirror/modules
 ```
 ```
 git clone https://github.com/PierreGode/MMM-ICA.git
-
 ```
 in MagicMirror/config/config.js
-
-
-
 ```
 {
   module: "MMM-ICA",
@@ -54,7 +50,6 @@ in MagicMirror/config/config.js
     offersStoreId: "15215" // Default store ID for which offers will be displayed
   }
 },
-
 ```
 For the module to update you need MMM-ModuleScheduler
 https://github.com/ianperrin/MMM-ModuleScheduler
