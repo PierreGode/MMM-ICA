@@ -15,7 +15,6 @@ start: function() {
     };
     self.makeCardAccountsRequest(cardAccountsOptions);
   }, 600000); // 10 minutes in milliseconds
-}
   },
 
   socketNotificationReceived: function(notification, payload) {
