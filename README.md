@@ -19,14 +19,14 @@ For Authentication you need to use basic authentication, information you can fin
 
 
 
-how to install:
+How to install:
 ```
 cd MagicMirror/modules
 ```
 ```
 git clone https://github.com/PierreGode/MMM-ICA.git
 ```
-in MagicMirror/config/config.js
+In MagicMirror/config/config.js
 ```
 {
   module: "MMM-ICA",
