@@ -75,4 +75,7 @@ The page for Magic Mirror. https://magicmirror.builders/
 
 You can find this module and many more in 3rd Party Modules on the Magic Mirror page
 https://github.com/MichMich/MagicMirror/wiki/3rd-party-modules
-
+<p>
+Api free: yes
+<p>
+development status: WIP 
