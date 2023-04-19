@@ -154,7 +154,7 @@ socketNotificationReceived: function(notification, payload) {
 
     console.log("Got card accounts:", cardAccounts);
     this.cardAccounts = cardAccounts;
-    this.updateDom();
+    this.updateDom(1000);
   } else if (notification === "FAVORITE_STORES_RESULT") {
     if (payload.error) {
       console.error(`Error getting favorite stores: ${payload.error}`);
@@ -184,7 +184,7 @@ socketNotificationReceived: function(notification, payload) {
 
     console.log("Got offers:", offers);
     this.offers = offers;
-    this.updateDom();
+    this.updateDom(1000);
   }
 },
 });
