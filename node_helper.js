@@ -2,8 +2,20 @@ const NodeHelper = require("node_helper");
 const axios = require("axios");
 
 module.exports = NodeHelper.create({
-  start: function() {
-    console.log(`Starting helper: ${this.name}`);
+start: function() {
+  console.log(`Starting helper: ${this.name}`);
+  const self = this;
+  setInterval(() => {
+    const cardAccountsOptions = {
+      method: "GET",
+      url: `${self.config.apiUrl}/user/cardaccounts`,
+      headers: {
+        "AuthenticationTicket": self.authTicket
+      }
+    };
+    self.makeCardAccountsRequest(cardAccountsOptions);
+  }, 600000); // 10 minutes in milliseconds
+}
   },
 
   socketNotificationReceived: function(notification, payload) {
