@@ -79,7 +79,14 @@ if (this.config.offers && this.config.offersStoreId) {
       const offers = data.Offers;
       const filteredOffers = offers.filter(offer => offer.StoreId.toString() === this.config.offersStoreId);
       if (filteredOffers.length > 0) {
-        offersDiv.innerHTML = `Offer:<br>${filteredOffers[0].ProductName}`;
+        offersDiv.innerHTML = `Offer:<br>`;
+        const offersList = document.createElement("ul");
+        filteredOffers.forEach(offer => {
+          const listItem = document.createElement("li");
+          listItem.innerHTML = `${offer.HeaderText} - ${offer.OfferCondition}`;
+          offersList.appendChild(listItem);
+        });
+        offersDiv.appendChild(offersList);
         wrapper.appendChild(offersDiv);
       } else {
         const noOffersDiv = document.createElement("div");
@@ -94,7 +101,6 @@ if (this.config.offers && this.config.offersStoreId) {
       wrapper.appendChild(errorDiv);
     });
 }
-
 
   return wrapper;
 },
