@@ -71,7 +71,7 @@ getDom: function() {
     wrapper.innerHTML = "Loading content...";
   }
 
-if (this.config.offers && this.config.offersStoreId) {
+if (this.config.settings.offers && this.config.offersStoreId) {
   fetch(`https://handla.api.ica.se/api/offers?Stores=${this.config.offersStoreId}&Fields=Offers&Select=ProductName`)
     .then(response => response.json())
     .then(data => {
@@ -79,11 +79,11 @@ if (this.config.offers && this.config.offersStoreId) {
       const offers = data.Offers;
       const filteredOffers = offers.filter(offer => offer.StoreId.toString() === this.config.offersStoreId);
       if (filteredOffers.length > 0) {
-        offersDiv.innerHTML = `Offer:<br>`;
+        offersDiv.innerHTML = `Offers:<br>`;
         const offersList = document.createElement("ul");
         filteredOffers.forEach(offer => {
           const listItem = document.createElement("li");
-          listItem.innerHTML = `${offer.HeaderText} - ${offer.OfferCondition}`;
+          listItem.innerHTML = `${offer.ProductName}: ${offer.OfferCondition}`; // Modified this line to match your desired format
           offersList.appendChild(listItem);
         });
         offersDiv.appendChild(offersList);
