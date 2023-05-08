@@ -71,25 +71,29 @@ getDom: function() {
     wrapper.innerHTML = "Loading content...";
   }
 
-if (this.config.settings.offers && this.offers) {
-  const offersDiv = document.createElement("div");
-  const filteredOffers = this.offers.filter(offer => offer.StoreId.toString() === this.config.offersStoreId);
-  if (filteredOffers.length > 0) {
-    offersDiv.innerHTML = `Offers:<br>`;
-    const offersList = document.createElement("ul");
-    filteredOffers.forEach(offer => {
-      const listItem = document.createElement("li");
-      listItem.innerHTML = `${offer.ProductName}: ${offer.OfferCondition}`;
-      offersList.appendChild(listItem);
-    });
-    offersDiv.appendChild(offersList);
-    wrapper.appendChild(offersDiv);
-  } else {
-    const noOffersDiv = document.createElement("div");
-    noOffersDiv.innerHTML = "No offers available for the specified store ID.";
-    wrapper.appendChild(noOffersDiv);
-  }
-})
+if (this.config.offers && this.config.offersStoreId) {
+  fetch(`https://handla.api.ica.se/api/offers?Stores=${this.config.offersStoreId}&Fields=Offers&Select=ProductName`)
+    .then(response => response.json())
+    .then(data => {
+      const offersDiv = document.createElement("div");
+      const offers = data.Offers;
+      const filteredOffers = offers.filter(offer => offer.StoreId.toString() === this.config.offersStoreId);
+      if (filteredOffers.length > 0) {
+        offersDiv.innerHTML = `Offer:<br>`;
+        const offersList = document.createElement("ul");
+        filteredOffers.forEach(offer => {
+          const listItem = document.createElement("li");
+          listItem.innerHTML = `${offer.HeaderText} - ${offer.OfferCondition}`;
+          offersList.appendChild(listItem);
+        });
+        offersDiv.appendChild(offersList);
+        wrapper.appendChild(offersDiv);
+      } else {
+        const noOffersDiv = document.createElement("div");
+        noOffersDiv.innerHTML = "No offers available for the specified store ID.";
+        wrapper.appendChild(noOffersDiv);
+      }
+    })
     .catch(error => {
       console.error(error);
       const errorDiv = document.createElement("div");
