@@ -41,7 +41,13 @@ getDom: function() {
   const wrapper = document.createElement("div");
   wrapper.className = "small bright";
 
-  if (this.cardAccounts) {
+  if (!this.loaded) {
+    // Display loading effect
+    const loadingDiv = document.createElement("div");
+    loadingDiv.innerHTML = "<span class='small fa fa-refresh fa-spin fa-fw'></span>";
+    loadingDiv.className = "small dimmed";
+    wrapper.appendChild(loadingDiv);
+  } else if (this.cardAccounts) {
     if (this.config.settings.Saldo) {
       const saldoDiv = document.createElement("div");
       saldoDiv.innerHTML = `Tillgängligt Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Available}`;
@@ -70,6 +76,30 @@ getDom: function() {
   } else {
     wrapper.innerHTML = "Loading content...";
   }
+
+  if (this.config.settings.offers && this.offers) {
+    const offersDiv = document.createElement("div");
+    const filteredOffers = this.offers.filter(offer => offer.StoreId.toString() === this.config.offersStoreId);
+    if (filteredOffers.length > 0) {
+      offersDiv.innerHTML = `Offers:<br>`;
+      const offersList = document.createElement("ul");
+      filteredOffers.forEach(offer => {
+        const listItem = document.createElement("li");
+        listItem.innerHTML = `${offer.HeaderText} - ${offer.OfferCondition}`;
+        offersList.appendChild(listItem);
+      });
+      offersDiv.appendChild(offersList);
+      wrapper.appendChild(offersDiv);
+    } else {
+      const noOffersDiv = document.createElement("div");
+      noOffersDiv.innerHTML = "No offers available for the specified store ID.";
+      wrapper.appendChild(noOffersDiv);
+    }
+  }
+
+  return wrapper;
+},
+
 
   if (this.config.settings.offers && this.offers) {
     const offersDiv = document.createElement("div");
