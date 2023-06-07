@@ -68,7 +68,8 @@ getDom: function() {
     }
 
   } else {
-    wrapper.innerHTML = "Loading content...";
+    wrapper.innerHTML = "<span class='small fa fa-refresh fa-spin fa-fw'></span>";
+
   }
 
   if (this.config.settings.offers && this.offers) {
