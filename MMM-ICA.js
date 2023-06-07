@@ -69,6 +69,7 @@ getDom: function() {
 
   } else {
     wrapper.innerHTML = "<span class='small fa fa-refresh fa-spin fa-fw'></span>";
+    wrapper.className = "small dimmed";
 
   }
 
