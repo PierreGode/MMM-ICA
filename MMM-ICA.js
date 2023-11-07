@@ -30,11 +30,14 @@ start: function() {
 
   this.sendSocketNotification("GET_AUTH_TICKET", this.config);
 
-  // Refresh the value periodically
-  setInterval(() => {
-    this.getCardAccounts();
-  }, this.config.updateInterval);
-},
+    // Ensure that there's only one interval running for getCardAccounts
+    if (this.cardAccountsInterval) {
+      clearInterval(this.cardAccountsInterval);
+    }
+    this.cardAccountsInterval = setInterval(() => {
+      this.getCardAccounts();
+    }, this.config.updateInterval);
+  },
 
 
 getDom: function() {
@@ -184,3 +187,4 @@ socketNotificationReceived: function(notification, payload) {
   }
 },
 });
+// Made By Pierre Gode
