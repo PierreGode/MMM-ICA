@@ -1,0 +1,18 @@
+{
+    "name": "mmm-ICA",
+    "version": "1.0.0",
+    "description": "A module for the MagicMirror² for tracking your information from ICA.",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/PierreGode/MMM-ICA.git"
+    },
+    "keywords": [
+        "magicmirror",
+        "ICA",
+        "mat",
+        "butik",
+        "handel"
+    ],
+    "author": "PierreGode",
+    "license": "GNU"
+}
