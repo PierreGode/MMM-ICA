@@ -1,4 +1,4 @@
-#MMM-ICA is a Magic Mirror module for connecting to the Swedish grocery store ICA API.
+#MMM-ICA is a [MagicMirror²](https://github.com/MagicMirrorOrg/MagicMirror) module for connecting to the Swedish grocery store ICA API.
 
 
 
