@@ -1,3 +1,4 @@
+import csv
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
@@ -18,8 +19,8 @@ def predict_last_day_of_current_month(model):
     prediction = model.predict([[day_of_month, day_of_week]])
     return round(prediction[0], 2)
 
-# Load your saldo data
-data = pd.read_csv('/home/PI/saldo_data.csv')
+# Load your saldo data with a custom delimiter (,)
+data = pd.read_csv('/home/PI/saldo_data.csv', delimiter=',')
 
 # Remove duplicate entries
 data = data.drop_duplicates(subset=['Date', 'Saldo'])
