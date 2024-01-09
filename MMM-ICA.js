@@ -189,10 +189,12 @@ Module.register("MMM-ICA", {
   },
 
 exportSaldoData: function () {
-    console.log("Exporting saldo data...");
+    console.log("Starting exportSaldoData function"); // Confirm function call
 
     try {
         if (this.cardAccounts && this.cardAccounts.Cards) {
+            console.log("Card accounts data is available"); // Verify data availability
+
             const dataRows = [];
 
             for (const card of this.cardAccounts.Cards) {
@@ -223,10 +225,10 @@ exportSaldoData: function () {
                 console.error('No saldo data available to export.');
             }
         } else {
-            console.error('No cardAccounts data available to export.');
+            console.error('Card accounts data is not available.');
         }
     } catch (error) {
-        console.error('Error exporting saldo data:', error);
+        console.error('Error in exportSaldoData:', error);
     }
 },
 });
