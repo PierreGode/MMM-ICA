@@ -116,41 +116,41 @@ module.exports = NodeHelper.create({
       });
   },
 
-  exportSaldoData: function (cardAccounts) {
+exportSaldoData: function (cardAccounts) {
     console.log("Exporting saldo data in NodeHelper...");
 
     try {
-      if (cardAccounts && cardAccounts.Cards) {
-        const dataRows = [];
+        if (cardAccounts && cardAccounts.Cards) {
+            const dataRows = [];
 
-        for (const card of cardAccounts.Cards) {
-          for (const account of card.Accounts) {
-            const date = new Date().toISOString().split('T')[0];
-            const saldo = account.Available;
-            const dataRow = `${date},${saldo}`;
-            dataRows.push(dataRow);
-          }
-        }
-
-        if (dataRows.length > 0) {
-          const dataToWrite = dataRows.join('\n') + '\n';
-          const filePath = '/home/PI/saldo_data.csv';
-
-          fs.appendFile(filePath, dataToWrite, (err) => {
-            if (err) {
-              console.error('Error writing to file in NodeHelper:', err);
-            } else {
-              console.log(`Saldo data exported to ${filePath} by NodeHelper`);
+            for (const card of cardAccounts.Cards) {
+                for (const account of card.Accounts) {
+                    const date = new Date().toISOString().split('T')[0];
+                    const saldo = Math.round(account.Available); // Round saldo to a whole number
+                    const dataRow = `${date},${saldo}`;
+                    dataRows.push(dataRow);
+                }
             }
-          });
+
+            if (dataRows.length > 0) {
+                const dataToWrite = dataRows.join('\n') + '\n';
+                const filePath = '/home/PI/saldo_data.csv';
+
+                fs.appendFile(filePath, dataToWrite, (err) => {
+                    if (err) {
+                        console.error('Error writing to file in NodeHelper:', err);
+                    } else {
+                        console.log(`Saldo data exported to ${filePath} by NodeHelper`);
+                    }
+                });
+            } else {
+                console.error('No saldo data available to export in NodeHelper.');
+            }
         } else {
-          console.error('No saldo data available to export in NodeHelper.');
+            console.error('Card accounts data not available in NodeHelper.');
         }
-      } else {
-        console.error('Card accounts data not available in NodeHelper.');
-      }
     } catch (error) {
-      console.error('Error in NodeHelper exportSaldoData:', error);
+        console.error('Error in NodeHelper exportSaldoData:', error);
     }
-  }
+}
 });
