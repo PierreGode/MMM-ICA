@@ -2,19 +2,19 @@ const NodeHelper = require("node_helper");
 const axios = require("axios");
 
 module.exports = NodeHelper.create({
-start: function() {
-  console.log(`Starting helper: ${this.name}`);
-  const self = this;
-  setInterval(() => {
-    const cardAccountsOptions = {
-      method: "GET",
-      url: `${self.config.apiUrl}/user/cardaccounts`,
-      headers: {
-        "AuthenticationTicket": self.authTicket
-      }
-    };
-    self.makeCardAccountsRequest(cardAccountsOptions);
-  }, 600000); // 10 minutes in milliseconds
+  start: function() {
+    console.log(`Starting helper: ${this.name}`);
+    const self = this;
+    setInterval(() => {
+      const cardAccountsOptions = {
+        method: "GET",
+        url: `${self.config.apiUrl}/user/cardaccounts`,
+        headers: {
+          "AuthenticationTicket": self.authTicket
+        }
+      };
+      self.makeCardAccountsRequest(cardAccountsOptions);
+    }, 600000); // 10 minutes in milliseconds
   },
 
   socketNotificationReceived: function(notification, payload) {
@@ -81,14 +81,6 @@ start: function() {
           const cardAccounts = response.data;
           console.log("Got card accounts:", cardAccounts);
           self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { cardAccounts: cardAccounts });
-          const favoriteStoresOptions = {
-            method: "GET",
-            url: `${self.config.storeApiUrl}/user/stores`,
-            headers: {
-              "AuthenticationTicket": self.authTicket
-            }
-          };
-          self.makeFavoriteStoresRequest(favoriteStoresOptions);
         } else {
           console.error(`Error getting card accounts: ${response.statusText}`);
           self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { error: response.statusText });
@@ -97,60 +89,6 @@ start: function() {
       .catch(function(error) {
         console.error(`Error getting card accounts: ${error}`);
         self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { error: error.message });
-      });
-  },
-
-  makeFavoriteStoresRequest: function(options) {
-    const self = this;
-    axios(options)
-      .then(function(response) {
-        if (response.status === 200) {
-          const favoriteStores = response.data;
-          console.log("Got favorite stores:", favoriteStores);
-          self.sendSocketNotification("FAVORITE_STORES_RESULT", { favoriteStores: favoriteStores });
-
-          const offersOptions = {
-            method: "GET",
-            url: `${self.config.storeApiUrl}/offers?Stores=${self.config.offersStoreId}`,
-            headers: {
-              "AuthenticationTicket": self.authTicket
-                        }
-        };
-        if (self.config.offers) {
-          const storeId = self.config.offers;
-          offersOptions.url = `${offersOptions.url}/store/${storeId}`;
-          console.log(`Retrieving offers for store ${storeId}`);
-        } else {
-          console.log("Retrieving all offers");
-        }
-        self.makeOffersRequest(offersOptions);
-      } else {
-        console.error(`Error getting favorite stores: ${response.statusText}`);
-        self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: response.statusText });
-      }
-      })
-      .catch(function(error) {
-        console.error(`Error getting favorite stores: ${error}`);
-        self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: error.message });
-      });
-  },
-
-  makeOffersRequest: function(options) {
-    const self = this;
-    axios(options)
-      .then(function(response) {
-        if (response.status === 200) {
-          const offers = response.data;
-          console.log("Got offers:", offers);
-          self.sendSocketNotification("OFFERS_RESULT", { offers: offers });
-        } else {
-          console.error(`Error getting offers: ${response.statusText}`);
-          self.sendSocketNotification("OFFERS_RESULT", { error: response.statusText });
-        }
-      })
-      .catch(function(error) {
-        console.error(`Error getting offers: ${error}`);
-        self.sendSocketNotification("OFFERS_RESULT", { error: error.message });
       });
   }
 });
