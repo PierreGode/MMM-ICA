@@ -15,7 +15,6 @@ Module.register("MMM-ICA", {
       DisplayStoreID: true, // Add this line to include the setting
     },
     offersStoreId: "", // Default store ID for which offers will be displayed
-    dataExportPath: "/home/PI/saldo_data.csv", // Specify the export file path
   },
 
   start: function() {
