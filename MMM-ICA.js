@@ -190,6 +190,9 @@ Module.register("MMM-ICA", {
   },
 
   exportSaldoData: function () {
+    console.log("Exporting saldo data...");
+    console.log("this.cardAccounts:", this.cardAccounts); // Add this line for debugging
+    // Rest of the function logic...
     const fs = require('fs'); // Import the Node.js fs module for file operations
 
     // Check if saldo data exists
