@@ -73,25 +73,6 @@ Module.register("MMM-ICA", {
       wrapper.innerHTML = "<span class='small fa fa-refresh fa-spin fa-fw'></span>";
       wrapper.className = "small dimmed";
     }
-
-    if (this.config.settings.offers && this.offers) {
-      const offersDiv = document.createElement("div");
-      const filteredOffers = this.offers.filter(offer => offer.StoreId.toString() === this.config.offersStoreId);
-      if (filteredOffers.length > 0) {
-        offersDiv.innerHTML = `Offers:<br>`;
-        const offersList = document.createElement("ul");
-        filteredOffers.forEach(offer => {
-          const listItem = document.createElement("li");
-          listItem.innerHTML = `${offer.HeaderText} - ${offer.OfferCondition}`;
-          offersList.appendChild(listItem);
-        });
-        offersDiv.appendChild(offersList);
-        wrapper.appendChild(offersDiv);
-      } else {
-        const noOffersDiv = document.createElement("div");
-        noOffersDiv.innerHTML = "No offers available for the specified store ID.";
-        wrapper.appendChild(noOffersDiv);
-      }
     }
 
     return wrapper;
