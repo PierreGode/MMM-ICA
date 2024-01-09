@@ -189,9 +189,7 @@ Module.register("MMM-ICA", {
     }
   },
 
- exportSaldoData: function () {
-    const fs = require('fs'); // Import the Node.js fs module for file operations
-
+exportSaldoData: function () {
     console.log("Exporting saldo data...");
 
     try {
@@ -212,26 +210,39 @@ Module.register("MMM-ICA", {
 
                     // Push the data row to the array
                     dataRows.push(dataRow);
-
-                    console.log(`Exported Saldo data: ${date},${saldo}`); // Log the exported data
                 }
             }
 
-            // Join the data rows with line breaks
-            const dataToWrite = dataRows.join('\n');
+            if (dataRows.length > 0) {
+                // Join the data rows with line breaks
+                const dataToWrite = dataRows.join('\n');
 
-            // Get the export file path from the configuration
-            const exportFilePath = this.config.dataExportPath;
+                // Create a Blob containing the CSV data
+                const blob = new Blob([dataToWrite], { type: 'text/csv' });
 
-            // Write the data to the specified file
-            fs.writeFileSync(exportFilePath, dataToWrite);
+                // Create a download link for the Blob
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'saldo_data.csv';
 
-            console.log(`Saldo data exported to ${exportFilePath}`);
+                // Trigger a click event to download the file
+                document.body.appendChild(a);
+                a.click();
+
+                // Cleanup
+                URL.revokeObjectURL(url);
+
+                console.log(`Saldo data exported to CSV file.`);
+            } else {
+                console.error('No saldo data available to export.');
+            }
         } else {
-            console.error('No saldo data available to export.');
+            console.error('No cardAccounts data available to export.');
         }
     } catch (error) {
-        console.error('Error writing saldo data to file:', error.message);
+        console.error('Error exporting saldo data:', error.message);
     }
 },
 });
