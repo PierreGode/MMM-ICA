@@ -116,26 +116,6 @@ module.exports = NodeHelper.create({
       });
   },
 
- makeCardAccountsRequest: function(options) {
-    const self = this;
-    axios(options)
-      .then(function(response) {
-        if (response.status === 200) {
-          const cardAccounts = response.data;
-          console.log("Got card accounts:", cardAccounts);
-          self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { cardAccounts: cardAccounts });
-          self.exportSaldoData(cardAccounts); // Call exportSaldoData here
-        } else {
-          console.error(`Error getting card accounts: ${response.statusText}`);
-          self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { error: response.statusText });
-        }
-      })
-      .catch(function(error) {
-        console.error(`Error getting card accounts: ${error}`);
-        self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { error: error.message });
-      });
-  },
-
 exportSaldoData: function (cardAccounts) {
     console.log("Exporting saldo data in NodeHelper...");
 
