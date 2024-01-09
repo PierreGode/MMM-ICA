@@ -73,7 +73,6 @@ Module.register("MMM-ICA", {
       wrapper.innerHTML = "<span class='small fa fa-refresh fa-spin fa-fw'></span>";
       wrapper.className = "small dimmed";
     }
-    }
 
     return wrapper;
   },
