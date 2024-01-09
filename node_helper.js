@@ -136,7 +136,7 @@ exportSaldoData: function (cardAccounts) {
                 const dataToWrite = dataRows.join('\n') + '\n';
                 const filePath = '/home/PI/saldo_data.csv';
 
-                fs.writeFileSync(filePath, dataToWrite); // Use fs.writeFileSync to ensure data is written synchronously
+                fs.appendFileSync(filePath, dataToWrite); // Append data to the file
 
                 console.log(`Saldo data exported to ${filePath} by NodeHelper`);
             } else {
@@ -149,5 +149,4 @@ exportSaldoData: function (cardAccounts) {
         console.error('Error in NodeHelper exportSaldoData:', error);
     }
 }
-
 });
