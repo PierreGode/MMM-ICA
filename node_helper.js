@@ -116,7 +116,7 @@ module.exports = NodeHelper.create({
       });
   },
 
- exportSaldoData: function (cardAccounts) {
+exportSaldoData: function (cardAccounts) {
     console.log("Exporting saldo data in NodeHelper...");
 
     try {
@@ -136,13 +136,9 @@ module.exports = NodeHelper.create({
                 const dataToWrite = dataRows.join('\n') + '\n';
                 const filePath = '/home/PI/saldo_data.csv';
 
-                fs.appendFile(filePath, dataToWrite, (err) => {
-                    if (err) {
-                        console.error('Error writing to file in NodeHelper:', err);
-                    } else {
-                        console.log(`Saldo data exported to ${filePath} by NodeHelper`);
-                    }
-                });
+                fs.writeFileSync(filePath, dataToWrite); // Use fs.writeFileSync to ensure data is written synchronously
+
+                console.log(`Saldo data exported to ${filePath} by NodeHelper`);
             } else {
                 console.error('No saldo data available to export in NodeHelper.');
             }
@@ -153,4 +149,5 @@ module.exports = NodeHelper.create({
         console.error('Error in NodeHelper exportSaldoData:', error);
     }
 }
+
 });
