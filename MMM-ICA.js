@@ -5,17 +5,17 @@ Module.register("MMM-ICA", {
     apiUrl: "",
     storeApiUrl: "",
     updateNotification: "UPDATE_ICA_MODULE",
-    updateInterval: 10 * 60 * 1000, // Update every 10 minutes.
-    retryDelay: 5 * 60 * 1000, // Retry every 5 minutes if an error occurs.
+    updateInterval: 10 * 60 * 1000, // Update every 10 minutes
+    retryDelay: 5 * 60 * 1000, // Retry delay
     settings: {
       Saldo: true,
       AccountName: true,
       FavoriteStores: true,
-      offers: true, // Add this line to enable the offers feature
-      DisplayStoreID: true, // Add this line to include the setting
+      offers: true,
+      DisplayStoreID: true,
     },
-    offersStoreId: "", // Default store ID for which offers will be displayed
-    predictedSaldo: null, // Add this line to store the predicted saldo
+    offersStoreId: "",
+    predictedSaldo: null, // Added for predicted saldo
   },
 
   start: function() {
@@ -31,7 +31,6 @@ Module.register("MMM-ICA", {
 
     this.sendSocketNotification("GET_AUTH_TICKET", this.config);
 
-    // Ensure that there's only one interval running for getCardAccounts
     if (this.cardAccountsInterval) {
       clearInterval(this.cardAccountsInterval);
     }
@@ -50,7 +49,6 @@ Module.register("MMM-ICA", {
         saldoDiv.innerHTML = `Tillgängligt Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Available}`;
         wrapper.appendChild(saldoDiv);
 
-        // Display predicted saldo
         if (this.config.predictedSaldo !== null) {
           const predictedSaldoDiv = document.createElement("div");
           predictedSaldoDiv.innerHTML = `Gissad saldo den sista: ${this.config.predictedSaldo}`;
@@ -113,7 +111,6 @@ Module.register("MMM-ICA", {
       this.authTicket = authTicket;
       this.updateDom();
 
-      // Schedule the first call to the card accounts API.
       setInterval(() => {
         this.getCardAccounts();
       }, this.config.updateInterval);
@@ -169,8 +166,8 @@ Module.register("MMM-ICA", {
       this.offers = offers;
       this.updateDom(1000);
     } else if (notification === "PREDICTION_RESULT") {
-      // Handle the prediction result
-      this.config.predictedSaldo = payload;
+      // Handling the prediction result
+      this.config.predictedSaldo = payload; // Assuming payload is the predicted saldo
       this.updateDom();
     }
   },
