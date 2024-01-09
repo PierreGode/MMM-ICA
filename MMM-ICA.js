@@ -192,11 +192,12 @@ Module.register("MMM-ICA", {
   exportSaldoData: function () {
     const fs = require('fs'); // Import the Node.js fs module for file operations
 
-    console.log("Exporting saldo data...");
+    console.log("Export Exporting saldo data...");
 
     try {
       // Check if saldo data exists
       if (this.cardAccounts) {
+        console.log("Export data exists");
         // Create an array to hold the data rows
         const dataRows = [];
 
@@ -209,6 +210,7 @@ Module.register("MMM-ICA", {
 
             // Create a data row in the required format
             const dataRow = `${date},${saldo}`;
+            console.log(`Export Saldo data exported with ${date},${saldo}`);
 
             // Push the data row to the array
             dataRows.push(dataRow);
