@@ -189,49 +189,49 @@ Module.register("MMM-ICA", {
     }
   },
 
-  exportSaldoData: function () {
+ exportSaldoData: function () {
     const fs = require('fs'); // Import the Node.js fs module for file operations
 
-    console.log("Export Exporting saldo data...");
+    console.log("Exporting saldo data...");
 
     try {
-      // Check if saldo data exists
-      if (this.cardAccounts) {
-        console.log("Export data exists");
-        // Create an array to hold the data rows
-        const dataRows = [];
+        // Check if saldo data exists
+        if (this.cardAccounts) {
+            // Create an array to hold the data rows
+            const dataRows = [];
 
-        // Loop through the card accounts
-        for (const card of this.cardAccounts.Cards) {
-          for (const account of card.Accounts) {
-            // Extract relevant data fields
-            const date = new Date().toISOString().split('T')[0]; // Get the current date
-            const saldo = account.Available;
+            // Loop through the card accounts
+            for (const card of this.cardAccounts.Cards) {
+                for (const account of card.Accounts) {
+                    // Extract relevant data fields
+                    const date = new Date().toISOString().split('T')[0]; // Get the current date
+                    const saldo = account.Available;
 
-            // Create a data row in the required format
-            const dataRow = `${date},${saldo}`;
-            console.log(`Export Saldo data exported with ${date},${saldo}`);
+                    // Create a data row in the required format
+                    const dataRow = `${date},${saldo}`;
 
-            // Push the data row to the array
-            dataRows.push(dataRow);
-          }
+                    // Push the data row to the array
+                    dataRows.push(dataRow);
+
+                    console.log(`Exported Saldo data: ${date},${saldo}`); // Log the exported data
+                }
+            }
+
+            // Join the data rows with line breaks
+            const dataToWrite = dataRows.join('\n');
+
+            // Get the export file path from the configuration
+            const exportFilePath = this.config.dataExportPath;
+
+            // Write the data to the specified file
+            fs.writeFileSync(exportFilePath, dataToWrite);
+
+            console.log(`Saldo data exported to ${exportFilePath}`);
+        } else {
+            console.error('No saldo data available to export.');
         }
-
-        // Join the data rows with line breaks
-        const dataToWrite = dataRows.join('\n');
-
-        // Get the export file path from the configuration
-        const exportFilePath = this.config.dataExportPath;
-
-        // Write the data to the specified file
-        fs.writeFileSync(exportFilePath, dataToWrite);
-
-        console.log(`Saldo data exported to ${exportFilePath}`);
-      } else {
-        console.error('No saldo data available to export.');
-      }
     } catch (error) {
-      console.error('Error writing saldo data to file:', error.message);
+        console.error('Error writing saldo data to file:', error.message);
     }
-  },
+},
 });
