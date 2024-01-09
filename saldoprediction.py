@@ -19,7 +19,7 @@ def predict_last_day_of_current_month(model):
     return round(prediction[0], 2)
 
 # Load your saldo data
-data = pd.read_csv('saldo_data.csv')
+data = pd.read_csv('/home/PI/saldo_data.csv')
 
 # Remove duplicate entries
 data = data.drop_duplicates(subset=['Date', 'Saldo'])
