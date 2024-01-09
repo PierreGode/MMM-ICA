@@ -192,25 +192,26 @@ exportSaldoData: function () {
     console.log("Exporting saldo data...");
 
     try {
-        // Check if saldo data exists
-        if (this.cardAccounts) {
+        if (this.cardAccounts && this.cardAccounts.Cards) {
             const dataRows = [];
 
-            // Loop through the card accounts
             for (const card of this.cardAccounts.Cards) {
-                for (const account of card.Accounts) {
-                    const date = new Date().toISOString().split('T')[0]; // Current date
-                    const saldo = account.Available;
-                    const dataRow = `${date},${saldo}`;
-                    dataRows.push(dataRow);
+                if (card.Accounts) {
+                    for (const account of card.Accounts) {
+                        if (account.Available !== undefined) {
+                            const date = new Date().toISOString().split('T')[0];
+                            const saldo = account.Available;
+                            const dataRow = `${date},${saldo}`;
+                            dataRows.push(dataRow);
+                        }
+                    }
                 }
             }
 
             if (dataRows.length > 0) {
                 const dataToWrite = dataRows.join('\n') + '\n';
-
-                // Write data to the file
                 const filePath = '/home/PI/saldo_data.csv';
+
                 fs.appendFile(filePath, dataToWrite, (err) => {
                     if (err) {
                         console.error('Error writing to file:', err);
