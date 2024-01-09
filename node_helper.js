@@ -126,7 +126,7 @@ exportSaldoData: function (cardAccounts) {
             for (const card of cardAccounts.Cards) {
                 for (const account of card.Accounts) {
                     const date = new Date().toISOString().split('T')[0];
-                    const saldo = Math.round(account.Available); // Round saldo to a whole number
+                    const saldo = Math.floor(account.Available); // Round saldo down to the nearest integer
                     const dataRow = `${date},${saldo}`;
                     dataRows.push(dataRow);
                 }
