@@ -195,46 +195,30 @@ exportSaldoData: function () {
     try {
         // Check if saldo data exists
         if (this.cardAccounts) {
-            // Create an array to hold the data rows
             const dataRows = [];
 
             // Loop through the card accounts
             for (const card of this.cardAccounts.Cards) {
                 for (const account of card.Accounts) {
-                    // Extract relevant data fields
-                    const date = new Date().toISOString().split('T')[0]; // Get the current date
+                    const date = new Date().toISOString().split('T')[0]; // Current date
                     const saldo = account.Available;
-
-                    // Create a data row in the required format
                     const dataRow = `${date},${saldo}`;
-
-                    // Push the data row to the array
                     dataRows.push(dataRow);
                 }
             }
 
             if (dataRows.length > 0) {
-                // Join the data rows with line breaks
-                const dataToWrite = dataRows.join('\n');
+                const dataToWrite = dataRows.join('\n') + '\n';
 
-                // Create a Blob containing the CSV data
-                const blob = new Blob([dataToWrite], { type: 'text/csv' });
-
-                // Create a download link for the Blob
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = 'saldo_data.csv';
-
-                // Trigger a click event to download the file
-                document.body.appendChild(a);
-                a.click();
-
-                // Cleanup
-                URL.revokeObjectURL(url);
-
-                console.log(`Saldo data exported to CSV file.`);
+                // Write data to the file
+                const filePath = '/home/PI/saldo_data.csv';
+                fs.appendFile(filePath, dataToWrite, (err) => {
+                    if (err) {
+                        console.error('Error writing to file:', err);
+                    } else {
+                        console.log(`Saldo data exported to ${filePath}`);
+                    }
+                });
             } else {
                 console.error('No saldo data available to export.');
             }
@@ -242,7 +226,7 @@ exportSaldoData: function () {
             console.error('No cardAccounts data available to export.');
         }
     } catch (error) {
-        console.error('Error exporting saldo data:', error.message);
+        console.error('Error exporting saldo data:', error);
     }
 },
 });
