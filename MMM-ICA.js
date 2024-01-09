@@ -15,6 +15,7 @@ Module.register("MMM-ICA", {
       DisplayStoreID: true, // Add this line to include the setting
     },
     offersStoreId: "", // Default store ID for which offers will be displayed
+    predictedSaldo: null, // Add this line to store the predicted saldo
   },
 
   start: function() {
@@ -48,6 +49,13 @@ Module.register("MMM-ICA", {
         const saldoDiv = document.createElement("div");
         saldoDiv.innerHTML = `Tillgängligt Saldo: ${this.cardAccounts.Cards[0].Accounts[0].Available}`;
         wrapper.appendChild(saldoDiv);
+
+        // Display predicted saldo
+        if (this.config.predictedSaldo !== null) {
+          const predictedSaldoDiv = document.createElement("div");
+          predictedSaldoDiv.innerHTML = `Gissad saldo den sista: ${this.config.predictedSaldo}`;
+          wrapper.appendChild(predictedSaldoDiv);
+        }
       }
 
       if (this.config.settings.AccountName) {
@@ -68,7 +76,6 @@ Module.register("MMM-ICA", {
         storeIDDiv.innerHTML = `Store ID: ${this.config.offersStoreId}`;
         wrapper.appendChild(storeIDDiv);
       }
-
     } else {
       wrapper.innerHTML = "<span class='small fa fa-refresh fa-spin fa-fw'></span>";
       wrapper.className = "small dimmed";
@@ -77,7 +84,6 @@ Module.register("MMM-ICA", {
     return wrapper;
   },
 
-  // Override socket notification handler.
   socketNotificationReceived: function(notification, payload) {
     console.log("Received socket notification:", notification, "with payload:", payload);
 
@@ -132,9 +138,6 @@ Module.register("MMM-ICA", {
       console.log("Got card accounts:", cardAccounts);
       this.cardAccounts = cardAccounts;
       this.updateDom(1000);
-
-      // Export saldo data to CSV
-      this.exportSaldoData();
     } else if (notification === "FAVORITE_STORES_RESULT") {
       if (payload.error) {
         console.error(`Error getting favorite stores: ${payload.error}`);
@@ -165,50 +168,10 @@ Module.register("MMM-ICA", {
       console.log("Got offers:", offers);
       this.offers = offers;
       this.updateDom(1000);
+    } else if (notification === "PREDICTION_RESULT") {
+      // Handle the prediction result
+      this.config.predictedSaldo = payload;
+      this.updateDom();
     }
   },
-
-exportSaldoData: function () {
-    console.log("Starting exportSaldoData function"); // Confirm function call
-
-    try {
-        if (this.cardAccounts && this.cardAccounts.Cards) {
-            console.log("Card accounts data is available"); // Verify data availability
-
-            const dataRows = [];
-
-            for (const card of this.cardAccounts.Cards) {
-                if (card.Accounts) {
-                    for (const account of card.Accounts) {
-                        if (account.Available !== undefined) {
-                            const date = new Date().toISOString().split('T')[0];
-                            const saldo = account.Available;
-                            const dataRow = `${date},${saldo}`;
-                            dataRows.push(dataRow);
-                        }
-                    }
-                }
-            }
-
-            if (dataRows.length > 0) {
-                const dataToWrite = dataRows.join('\n') + '\n';
-                const filePath = '/home/PI/saldo_data.csv';
-
-                fs.appendFile(filePath, dataToWrite, (err) => {
-                    if (err) {
-                        console.error('Error writing to file:', err);
-                    } else {
-                        console.log(`Saldo data exported to ${filePath}`);
-                    }
-                });
-            } else {
-                console.error('No saldo data available to export.');
-            }
-        } else {
-            console.error('Card accounts data is not available.');
-        }
-    } catch (error) {
-        console.error('Error in exportSaldoData:', error);
-    }
-},
 });
