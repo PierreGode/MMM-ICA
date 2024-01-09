@@ -1,10 +1,16 @@
 const NodeHelper = require("node_helper");
 const axios = require("axios");
 const fs = require('fs'); // Include the File System module
+const { exec } = require("child_process");
 
 module.exports = NodeHelper.create({
   start: function() {
     console.log(`Starting helper: ${this.name}`);
+    this.runPredictionScript(); // Run the Python script at startup
+    setInterval(() => {
+      this.runPredictionScript(); // Schedule the script to run periodically
+    }, 24 * 60 * 60 * 1000); // Adjust the interval as needed
+
     const self = this;
     setInterval(() => {
       const cardAccountsOptions = {
@@ -16,6 +22,22 @@ module.exports = NodeHelper.create({
       };
       self.makeCardAccountsRequest(cardAccountsOptions);
     }, 600000); // 10 minutes in milliseconds
+  },
+
+  runPredictionScript: function() {
+    exec("/path/to/venv/bin/python /path/to/your/repository/saldoprediction.py", (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Error: ${error.message}`);
+        return;
+      }
+      if (stderr) {
+        console.error(`Stderr: ${stderr}`);
+        return;
+      }
+      console.log(`Python script output: ${stdout}`);
+      // Handle the prediction output here
+      this.sendSocketNotification("PREDICTION_RESULT", stdout.trim());
+    });
   },
 
   socketNotificationReceived: function(notification, payload) {
