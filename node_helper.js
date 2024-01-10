@@ -29,22 +29,22 @@ runPredictionScript: function() {
 
     exec("python /home/PI/MagicMirror/modules/MMM-ICA/saldoprediction.py", (error, stdout, stderr) => {
         if (error) {
-            console.error(`Exporting: Error: ${error.message}`);
+            console.error(`Exporting:Error: ${error.message}`);
             return;
         }
         if (stderr) {
-            console.error(`Exporting: Stderr: ${stderr}`);
+            console.error(`Exporting:Stderr: ${stderr}`);
             return;
         }
-        console.log(`Exporting: Python script output: ${stdout}`);
+        console.log(`Exporting:Python script output: ${stdout}`);
 
-        // Extract the end-of-month prediction
-        const predictionMatch = stdout.match(/End of current month prediction: (\d+(\.\d+)?)/);
-        if (predictionMatch && predictionMatch[1]) {
-            console.log("Exporting: End-of-month prediction:", predictionMatch[1]);
-            this.sendSocketNotification("PREDICTION_RESULT", predictionMatch[1]);
+        // Parse the output to find the end of month prediction
+        const predictionLine = stdout.split('\n').find(line => line.includes('End of current month prediction'));
+        if (predictionLine) {
+            console.log("Exporting: Found prediction:", predictionLine);
+            this.sendSocketNotification("PREDICTION_RESULT", predictionLine.trim());
         } else {
-            console.error("Exporting: Unable to find end-of-month prediction in script output");
+            console.error("Exporting: End of month prediction not found in script output.");
         }
     });
 },
