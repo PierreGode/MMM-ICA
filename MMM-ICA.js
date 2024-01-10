@@ -136,7 +136,9 @@ Module.register("MMM-ICA", {
       console.log("Got card accounts:", cardAccounts);
       this.cardAccounts = cardAccounts;
       this.updateDom(1000);
+      console.error("Error:Exporting: Unable to retrieve card information.");
     } else if (notification === "PREDICTION_RESULT") {
+      console.log(`Exporting: ${payload}`);
       this.config.predictedSaldo = payload; // Assuming payload is the predicted saldo
       this.updateDom();
     }
