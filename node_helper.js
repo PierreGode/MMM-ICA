@@ -25,7 +25,7 @@ module.exports = NodeHelper.create({
   },
 
   runPredictionScript: function() {
-    exec("/path/to/venv/bin/python /path/to/your/repository/saldoprediction.py", (error, stdout, stderr) => {
+    exec("python /home/PI/modules/MMM-ICA/saldoprediction.py", (error, stdout, stderr) => {
       if (error) {
         console.error(`Error: ${error.message}`);
         return;
