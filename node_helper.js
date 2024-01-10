@@ -25,23 +25,23 @@ module.exports = NodeHelper.create({
   },
 
 runPredictionScript: function() {
-    console.log(`Exporting: attempt running python script`);
-    exec("python /home/PI/MagicMirror/modules/MMM-ICA/saldoprediction.py", (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Exporting:Error: ${error.message}`);
-        return;
-      }
-      if (stderr) {
-        console.error(`Stderr: ${stderr}`);
-        return;
-      }
-      console.log(`Exporting:Python script output: ${stdout}`);
+    console.log("Exporting: Attempting to run python script");
 
-      // Log the output for debugging purposes
-      console.log("Exporting: Logging Python script output:", stdout.trim());
+    const scriptCommand = "python /home/PI/MagicMirror/modules/MMM-ICA/saldoprediction.py";
+    console.log(`Running command: ${scriptCommand}`);
 
-      // Handle the prediction output here
-      this.sendSocketNotification("PREDICTION_RESULT", stdout.trim());
+    exec(scriptCommand, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Exporting: Error executing script: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            console.error(`Exporting: Stderr from script: ${stderr}`);
+            // Optional: You can still handle stdout even if there's stderr
+        }
+
+        console.log(`Exporting: Python script output: ${stdout}`);
+        this.sendSocketNotification("PREDICTION_RESULT", stdout.trim());
     });
 },
 
