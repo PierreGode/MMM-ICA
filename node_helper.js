@@ -55,6 +55,7 @@ runPredictionScript: function() {
 },
 
 
+
   socketNotificationReceived: function(notification, payload) {
     console.log("Received socket notification:", notification, "with payload:", payload);
 
