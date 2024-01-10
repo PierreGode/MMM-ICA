@@ -85,7 +85,7 @@ Module.register("MMM-ICA", {
 
   displayPredictedSaldo: function(wrapper) {
     const predictedSaldoDiv = document.createElement("div");
-    predictedSaldoDiv.innerHTML = `Gissad saldo den sista: ${this.config.predictedSaldo}`;
+    //predictedSaldoDiv.innerHTML = `Gissad saldo den sista: ${this.config.predictedSaldo}`;
     wrapper.appendChild(predictedSaldoDiv);
   },
 
