@@ -25,6 +25,7 @@ module.exports = NodeHelper.create({
   },
 
 runPredictionScript: function() {
+    console.log(`Exporting: attempt running python script`);
     exec("python /home/PI/MagicMirror/modules/MMM-ICA/saldoprediction.py", (error, stdout, stderr) => {
       if (error) {
         console.error(`Exporting:Error: ${error.message}`);
