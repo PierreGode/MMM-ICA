@@ -11,7 +11,6 @@ Module.register("MMM-ICA", {
       Saldo: true,
       AccountName: true,
       FavoriteStores: true,
-      offers: true,
       DisplayStoreID: true,
     },
     offersStoreId: "",
@@ -150,21 +149,6 @@ Module.register("MMM-ICA", {
       console.log("Got favorite stores:", favoriteStores);
       this.favoriteStores = favoriteStores;
       this.updateDom();
-    } else if (notification === "OFFERS_RESULT") {
-      if (payload.error) {
-        console.error(`Error getting offers: ${payload.error}`);
-        return;
-      }
-
-      const offers = payload.offers;
-      if (!offers) {
-        console.error("Error: Unable to retrieve offers.");
-        return;
-      }
-
-      console.log("Got offers:", offers);
-      this.offers = offers;
-      this.updateDom(1000);
     } else if (notification === "PREDICTION_RESULT") {
       // Handling the prediction result
       this.config.predictedSaldo = payload; // Assuming payload is the predicted saldo
