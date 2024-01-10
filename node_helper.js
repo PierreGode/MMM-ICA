@@ -24,8 +24,8 @@ module.exports = NodeHelper.create({
     }, 600000); // 10 minutes in milliseconds
   },
 
-  runPredictionScript: function() {
-    exec("python /home/PI/modules/MMM-ICA/saldoprediction.py", (error, stdout, stderr) => {
+runPredictionScript: function() {
+    exec("/path/to/venv/bin/python /path/to/your/repository/saldoprediction.py", (error, stdout, stderr) => {
       if (error) {
         console.error(`Error: ${error.message}`);
         return;
@@ -35,10 +35,15 @@ module.exports = NodeHelper.create({
         return;
       }
       console.log(`Python script output: ${stdout}`);
+
+      // Log the output for debugging purposes
+      console.log("Logging Python script output:", stdout.trim());
+
       // Handle the prediction output here
       this.sendSocketNotification("PREDICTION_RESULT", stdout.trim());
     });
-  },
+},
+
 
   socketNotificationReceived: function(notification, payload) {
     console.log("Received socket notification:", notification, "with payload:", payload);
