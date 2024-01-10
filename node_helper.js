@@ -27,24 +27,27 @@ module.exports = NodeHelper.create({
 runPredictionScript: function() {
     console.log("Exporting: Attempting to run python script");
 
-    const scriptCommand = "python /home/PI/MagicMirror/modules/MMM-ICA/saldoprediction.py";
-    console.log(`Running command: ${scriptCommand}`);
-
-    exec(scriptCommand, (error, stdout, stderr) => {
+    exec("python /home/PI/MagicMirror/modules/MMM-ICA/saldoprediction.py", (error, stdout, stderr) => {
         if (error) {
-            console.error(`Exporting: Error executing script: ${error.message}`);
+            console.error(`Exporting:Error: ${error.message}`);
             return;
         }
         if (stderr) {
-            console.error(`Exporting: Stderr from script: ${stderr}`);
-            // Optional: You can still handle stdout even if there's stderr
+            console.error(`Exporting:Stderr: ${stderr}`);
+            return;
         }
+        console.log(`Exporting:Python script output: ${stdout}`);
 
-        console.log(`Exporting: Python script output: ${stdout}`);
-        this.sendSocketNotification("PREDICTION_RESULT", stdout.trim());
+        // Parse the output to find the end of month prediction
+        const predictionLine = stdout.split('\n').find(line => line.includes('End of current month prediction'));
+        if (predictionLine) {
+            console.log("Exporting: Found prediction:", predictionLine);
+            this.sendSocketNotification("PREDICTION_RESULT", predictionLine.trim());
+        } else {
+            console.error("Exporting: End of month prediction not found in script output.");
+        }
     });
 },
-
 
   socketNotificationReceived: function(notification, payload) {
     console.log("Received socket notification:", notification, "with payload:", payload);
