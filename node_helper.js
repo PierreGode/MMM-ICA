@@ -37,13 +37,20 @@ runPredictionScript: function() {
         }
         if (stderr) {
             console.error(`Exporting: Stderr from script: ${stderr}`);
-            // Optional: You can still handle stdout even if there's stderr
         }
 
         console.log(`Exporting: Python script output: ${stdout}`);
-        this.sendSocketNotification("PREDICTION_RESULT", stdout.trim());
+        // Use a regular expression to extract the prediction value from the script's output
+        const predictionMatch = stdout.match(/End of current month prediction: (\d+\.\d+)/);
+        if (predictionMatch && predictionMatch[1]) {
+            // Send only the prediction value
+            this.sendSocketNotification("PREDICTION_RESULT", predictionMatch[1]);
+        } else {
+            console.error("Exporting: Unable to find end-of-month prediction in script output");
+        }
     });
 },
+
 
   socketNotificationReceived: function(notification, payload) {
     console.log("Received socket notification:", notification, "with payload:", payload);
