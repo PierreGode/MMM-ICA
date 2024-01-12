@@ -40,6 +40,9 @@ def predict_last_day_of_current_month(model, data):
 # Load your saldo data
 data = pd.read_csv('/home/PI/saldo_data.csv', delimiter=',')
 
+# Remove duplicate entries
+data.drop_duplicates(inplace=True)
+
 # Preprocess your data: Convert dates to features
 data['Date'] = pd.to_datetime(data['Date'])
 data.set_index('Date', inplace=True)
