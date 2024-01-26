@@ -19,22 +19,39 @@ def get_closest_previous_saldo(data, target_date):
         else:
             return 0  # Return 0 or some default value if no previous data is available
 
-# Function to predict saldo for the last day of the current month
-def predict_last_day_of_current_month(model, data):
+# Function to predict saldo for a specific period
+def predict_for_period(model, data):
     today = datetime.today()
-    start_of_month = today.replace(day=1)
-    current_month_saldo = get_closest_previous_saldo(data, start_of_month)
-    days_remaining = calendar.monthrange(today.year, today.month)[1] - today.day
 
-    # Prepare future dates for prediction
+    # Define the start and end dates for prediction
+    if today.day > 25:
+        # Start from the 26th of the current month
+        start_date = today.replace(day=26)
+        # End on the 25th of the next month
+        end_date = (start_date + timedelta(days=32)).replace(day=25)
+    else:
+        # Start from the 26th of the previous month
+        start_date = (today.replace(day=1) - timedelta(days=1)).replace(day=26)
+        # End on the 25th of the current month
+        end_date = today.replace(day=25)
+
+    start_saldo = get_closest_previous_saldo(data, start_date)
+
+    # Prepare dates for prediction
+    total_days = (end_date - start_date).days + 1
     future_dates = pd.DataFrame({
-        'DayOfMonth': [today.day + i for i in range(days_remaining)],
-        'DayOfWeek': [(today + timedelta(days=i)).weekday() for i in range(days_remaining)]
+        'DayOfMonth': [(start_date + timedelta(days=i)).day for i in range(total_days)],
+        'DayOfWeek': [(start_date + timedelta(days=i)).weekday() for i in range(total_days)]
     })
 
     # Predict future daily changes
     future_changes = model.predict(future_dates)
-    end_of_month_saldo = current_month_saldo + np.sum(future_changes)
+    end_of_month_saldo = start_saldo + np.sum(future_changes)
+
+    # Add 4000 on the 25th
+    if 25 in future_dates['DayOfMonth'].values:
+        end_of_month_saldo += 4000
+
     return round(end_of_month_saldo, 2)
 
 # Load your saldo data
@@ -73,6 +90,6 @@ model.fit(X_train, y_train)
 predictions = model.predict(X_test)
 print("RMSE:", np.sqrt(mean_squared_error(y_test, predictions)))
 
-# Predict end-of-month saldo
-prediction = predict_last_day_of_current_month(model, data)
+# Predict for the period 26th to 25th
+prediction = predict_for_period(model, data)
 print("End of current month prediction:", prediction)
