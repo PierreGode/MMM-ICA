@@ -17,6 +17,16 @@ def get_closest_previous_saldo(data, target_date):
         else:
             return 0
 
+# Function to remove outliers using IQR
+def remove_outliers(data):
+    Q1 = data['DailyChange'].quantile(0.25)
+    Q3 = data['DailyChange'].quantile(0.75)
+    IQR = Q3 - Q1
+    lower_bound = Q1 - 1.5 * IQR
+    upper_bound = Q3 + 1.5 * IQR
+    data_no_outliers = data[(data['DailyChange'] >= lower_bound) & (data['DailyChange'] <= upper_bound)]
+    return data_no_outliers
+
 # Function to predict saldo for a specific period (up to the 24th of the month)
 def predict_for_period(model, data):
     today = datetime.today()
@@ -40,7 +50,13 @@ def predict_for_period(model, data):
     future_changes = model.predict(future_dates)
     end_of_month_saldo = start_saldo + np.sum(future_changes)
 
-    return round(end_of_month_saldo, 2)
+    # Convert end_of_month_saldo to a single float value if it's not already
+    if isinstance(end_of_month_saldo, (np.ndarray, pd.Series)):
+        end_of_month_saldo = end_of_month_saldo.sum()
+
+    # Format the prediction date and saldo into a string
+    prediction_date = end_date.strftime('%Y-%m-%d')
+    return f"{prediction_date} {end_of_month_saldo:.2f}"
 
 # Load your saldo data
 data = pd.read_csv('/home/PI/saldo_data.csv', delimiter=',')
@@ -56,6 +72,9 @@ data.sort_index(inplace=True)
 # Calculate daily changes in saldo
 data['DailyChange'] = data['Saldo'].diff()
 data['DailyChange'].fillna(data['Saldo'].iloc[0], inplace=True)
+
+# Remove outliers using IQR
+data = remove_outliers(data)
 
 # Add additional features
 data['DayOfMonth'] = data.index.day
@@ -80,9 +99,9 @@ print("Cross-validated RMSE:", -scores.mean())
 predictions = model.predict(X_test)
 print("Test RMSE:", np.sqrt(mean_squared_error(y_test, predictions)))
 
-# Predict for the period up to the 24th
+# Predict for the period up to the 24th and print the formatted prediction
 #prediction = predict_for_period(model, data)
-#print("Prediction for the 24th of the month:", prediction)
+#print("First Prediction for the 24th of the month:", prediction)
 
 prediction = predict_for_period(model, data)
 print("End of current month prediction:", prediction)
