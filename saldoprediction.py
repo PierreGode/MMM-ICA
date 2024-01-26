@@ -17,16 +17,6 @@ def get_closest_previous_saldo(data, target_date):
         else:
             return 0
 
-# Function to remove outliers using IQR
-def remove_outliers(data):
-    Q1 = data['DailyChange'].quantile(0.25)
-    Q3 = data['DailyChange'].quantile(0.75)
-    IQR = Q3 - Q1
-    lower_bound = Q1 - 1.5 * IQR
-    upper_bound = Q3 + 1.5 * IQR
-    data_no_outliers = data[(data['DailyChange'] >= lower_bound) & (data['DailyChange'] <= upper_bound)]
-    return data_no_outliers
-
 # Function to predict saldo for a specific period (up to the 24th of the month)
 def predict_for_period(model, data):
     today = datetime.today()
@@ -66,9 +56,6 @@ data.sort_index(inplace=True)
 # Calculate daily changes in saldo
 data['DailyChange'] = data['Saldo'].diff()
 data['DailyChange'].fillna(data['Saldo'].iloc[0], inplace=True)
-
-# Remove outliers using IQR
-data = remove_outliers(data)
 
 # Add additional features
 data['DayOfMonth'] = data.index.day
