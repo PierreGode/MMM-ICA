@@ -28,7 +28,7 @@ runPredictionScript: function() {
     console.log("Exporting: Attempting to run python script");
 
     const scriptCommand = "python /home/PI/MagicMirror/modules/MMM-ICA/saldoprediction.py";
-    console.log(`Running command: ${scriptCommand}`);
+    console.log(`Exporting: Running command: ${scriptCommand}`);
 
     exec(scriptCommand, (error, stdout, stderr) => {
         if (error) {
