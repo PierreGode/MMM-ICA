@@ -11,7 +11,6 @@ def get_closest_previous_saldo(data, target_date):
     if target_date in data.index:
         return data['Saldo'].at[target_date]
     else:
-        # Find the closest previous date for which we have data
         previous_dates = data.index[data.index < target_date]
         if not previous_dates.empty:
             closest_date = previous_dates[-1]
@@ -22,36 +21,23 @@ def get_closest_previous_saldo(data, target_date):
 # Function to predict saldo for a specific period
 def predict_for_period(model, data):
     today = datetime.today()
-
-    # Define the start and end dates for prediction
     if today.day > 25:
-        # Start from the 26th of the current month
         start_date = today.replace(day=26)
-        # End on the 25th of the next month
         end_date = (start_date + timedelta(days=32)).replace(day=25)
     else:
-        # Start from the 26th of the previous month
         start_date = (today.replace(day=1) - timedelta(days=1)).replace(day=26)
-        # End on the 25th of the current month
         end_date = today.replace(day=25)
 
     start_saldo = get_closest_previous_saldo(data, start_date)
-
-    # Prepare dates for prediction
     total_days = (end_date - start_date).days + 1
     future_dates = pd.DataFrame({
         'DayOfMonth': [(start_date + timedelta(days=i)).day for i in range(total_days)],
         'DayOfWeek': [(start_date + timedelta(days=i)).weekday() for i in range(total_days)]
     })
-
-    # Predict future daily changes
     future_changes = model.predict(future_dates)
     end_of_month_saldo = start_saldo + np.sum(future_changes)
-
-    # Add 4000 on the 25th
     if 25 in future_dates['DayOfMonth'].values:
-        end_of_month_saldo += 0
-
+        end_of_month_saldo += 4000
     return round(end_of_month_saldo, 2)
 
 # Load your saldo data
@@ -60,15 +46,13 @@ data = pd.read_csv('/home/PI/saldo_data.csv', delimiter=',')
 # Remove duplicate entries
 data.drop_duplicates(inplace=True)
 
-# Preprocess your data: Convert dates to features
+# Preprocess your data
 data['Date'] = pd.to_datetime(data['Date'])
 data.set_index('Date', inplace=True)
 data.sort_index(inplace=True)
 
 # Calculate daily changes in saldo
 data['DailyChange'] = data['Saldo'].diff()
-
-# Fill NaN values (first row) with initial saldo change
 data['DailyChange'].fillna(data['Saldo'].iloc[0], inplace=True)
 
 # Add additional features
