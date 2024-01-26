@@ -50,7 +50,7 @@ def predict_for_period(model, data):
 
     # Add 4000 on the 25th
     if 25 in future_dates['DayOfMonth'].values:
-        end_of_month_saldo += 4000
+        end_of_month_saldo += 0
 
     return round(end_of_month_saldo, 2)
 
