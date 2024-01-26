@@ -88,4 +88,4 @@ print("Test RMSE:", np.sqrt(mean_squared_error(y_test, predictions)))
 
 # Predict for the period up to the 24th and print the formatted prediction
 prediction = predict_for_period(model, data)
-print("First Prediction for the 24th of the month:", prediction)
+print("End of current month prediction:", prediction)
