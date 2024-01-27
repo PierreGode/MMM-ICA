@@ -44,6 +44,7 @@ runPredictionScript: function() {
         const predictionMatch = stdout.match(/End of current month prediction: (\d+\.\d+)/);
         if (predictionMatch && predictionMatch[1]) {
             // Send only the prediction value
+            console.log(`Exporting: Python script output: ${PREDICTION_RESULT}`);
             this.sendSocketNotification("PREDICTION_RESULT", predictionMatch[1]);
         } else {
             console.error("Exporting: Unable to find end-of-month prediction in script output");
