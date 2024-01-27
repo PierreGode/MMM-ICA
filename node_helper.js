@@ -30,26 +30,26 @@ runPredictionScript: function() {
     const scriptCommand = "python /home/PI/MagicMirror/modules/MMM-ICA/saldoprediction.py";
     console.log(`Exporting: Running command: ${scriptCommand}`);
 
-    exec(scriptCommand, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Exporting: Error executing script: ${error.message}`);
-            return;
-        }
-        if (stderr) {
-            console.error(`Exporting: Stderr from script: ${stderr}`);
-        }
+exec(scriptCommand, (error, stdout, stderr) => {
+    if (error) {
+        console.error(`Exporting: Error executing script: ${error.message}`);
+        return;
+    }
+    if (stderr) {
+        console.error(`Exporting: Stderr from script: ${stderr}`);
+    }
 
-        console.log(`Exporting: Python script output: ${stdout}`);
-        // Use a regular expression to extract the prediction value from the script's output
-        const predictionMatch = stdout.match(/End of current month prediction: (\d+\.\d+)/);
-        if (predictionMatch && predictionMatch[1]) {
-            // Send only the prediction value
-            console.log(`Exporting: Python RESULT output: ${PREDICTION_RESULT}`);
-            this.sendSocketNotification("PREDICTION_RESULT", predictionMatch[1]);
-        } else {
-            console.error("Exporting: Unable to find end-of-month prediction in script output");
-        }
-    });
+    console.log(`Exporting: Python script output: ${stdout}`);
+    // Use a regular expression to extract the prediction value from the script's output
+    const predictionMatch = stdout.match(/End of current month prediction: (\d+\.\d+)/);
+    if (predictionMatch && predictionMatch[1]) {
+        // Send only the prediction value
+        console.log(`Exporting: Extracted Prediction Result: ${predictionMatch[1]}`);
+        this.sendSocketNotification("PREDICTION_RESULT", predictionMatch[1]);
+    } else {
+        console.error("Exporting: Unable to find end-of-month prediction in script output");
+    }
+});
 },
 
 
