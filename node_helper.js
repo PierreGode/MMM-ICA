@@ -39,11 +39,9 @@ exec(scriptCommand, (error, stdout, stderr) => {
         console.error(`Exporting: Stderr from script: ${stderr}`);
     }
 
-    console.log(`Exporting: Python script output: ${stdout}`);
-    // Use a regular expression to extract the prediction value from the script's output
+    console.log(`Exporting: Full Python script output: ${stdout}`);
     const predictionMatch = stdout.match(/End of current month prediction: (\d+\.\d+)/);
     if (predictionMatch && predictionMatch[1]) {
-        // Send only the prediction value
         console.log(`Exporting: Extracted Prediction Result: ${predictionMatch[1]}`);
         this.sendSocketNotification("PREDICTION_RESULT", predictionMatch[1]);
     } else {
