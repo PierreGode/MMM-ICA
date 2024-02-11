@@ -1,21 +1,55 @@
 const NodeHelper = require("node_helper");
 const axios = require("axios");
+const fs = require('fs'); // Include the File System module
+const { exec } = require("child_process");
 
 module.exports = NodeHelper.create({
-start: function() {
-  console.log(`Starting helper: ${this.name}`);
-  const self = this;
-  setInterval(() => {
-    const cardAccountsOptions = {
-      method: "GET",
-      url: `${self.config.apiUrl}/user/cardaccounts`,
-      headers: {
-        "AuthenticationTicket": self.authTicket
-      }
-    };
-    self.makeCardAccountsRequest(cardAccountsOptions);
-  }, 600000); // 10 minutes in milliseconds
+  start: function() {
+    console.log(`Starting helper: ${this.name}`);
+    this.runPredictionScript(); // Run the Python script at startup
+    setInterval(() => {
+      this.runPredictionScript(); // Schedule the script to run periodically
+    }, 24 * 60 * 60 * 1000); // Adjust the interval as needed
+
+    const self = this;
+    setInterval(() => {
+      const cardAccountsOptions = {
+        method: "GET",
+        url: `${self.config.apiUrl}/user/cardaccounts`,
+        headers: {
+          "AuthenticationTicket": self.authTicket
+        }
+      };
+      self.makeCardAccountsRequest(cardAccountsOptions);
+    }, 600000); // 10 minutes in milliseconds
   },
+
+runPredictionScript: function() {
+    console.log("Exporting: Attempting to run python script");
+
+    const scriptCommand = "python /home/PI/MagicMirror/modules/MMM-ICA/saldoprediction.py";
+    console.log(`Exporting: Running command: ${scriptCommand}`);
+
+exec(scriptCommand, (error, stdout, stderr) => {
+    if (error) {
+        console.error(`Exporting: Error executing script: ${error.message}`);
+        return;
+    }
+    if (stderr) {
+        console.error(`Exporting: Stderr from script: ${stderr}`);
+    }
+
+    console.log(`Exporting: Full Python script output: ${stdout}`);
+    const predictionMatch = stdout.match(/End of current month prediction: (\d+\.\d+)/);
+    if (predictionMatch && predictionMatch[1]) {
+        console.log(`Exporting: Extracted Prediction Result: ${predictionMatch[1]}`);
+        this.sendSocketNotification("PREDICTION_RESULT", predictionMatch[1]);
+    } else {
+        console.error("Exporting: Unable to find end-of-month prediction in script output");
+    }
+});
+},
+
 
   socketNotificationReceived: function(notification, payload) {
     console.log("Received socket notification:", notification, "with payload:", payload);
@@ -81,14 +115,7 @@ start: function() {
           const cardAccounts = response.data;
           console.log("Got card accounts:", cardAccounts);
           self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { cardAccounts: cardAccounts });
-          const favoriteStoresOptions = {
-            method: "GET",
-            url: `${self.config.storeApiUrl}/user/stores`,
-            headers: {
-              "AuthenticationTicket": self.authTicket
-            }
-          };
-          self.makeFavoriteStoresRequest(favoriteStoresOptions);
+          self.exportSaldoData(cardAccounts); // Call exportSaldoData here
         } else {
           console.error(`Error getting card accounts: ${response.statusText}`);
           self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { error: response.statusText });
@@ -100,57 +127,42 @@ start: function() {
       });
   },
 
-  makeFavoriteStoresRequest: function(options) {
-    const self = this;
-    axios(options)
-      .then(function(response) {
-        if (response.status === 200) {
-          const favoriteStores = response.data;
-          console.log("Got favorite stores:", favoriteStores);
-          self.sendSocketNotification("FAVORITE_STORES_RESULT", { favoriteStores: favoriteStores });
+exportSaldoData: function (cardAccounts) {
+    console.log("Exporting saldo data in NodeHelper...");
 
-          const offersOptions = {
-            method: "GET",
-            url: `${self.config.storeApiUrl}/offers?Stores=${self.config.offersStoreId}`,
-            headers: {
-              "AuthenticationTicket": self.authTicket
-                        }
-        };
-        if (self.config.offers) {
-          const storeId = self.config.offers;
-          offersOptions.url = `${offersOptions.url}/store/${storeId}`;
-          console.log(`Retrieving offers for store ${storeId}`);
-        } else {
-          console.log("Retrieving all offers");
-        }
-        self.makeOffersRequest(offersOptions);
-      } else {
-        console.error(`Error getting favorite stores: ${response.statusText}`);
-        self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: response.statusText });
-      }
-      })
-      .catch(function(error) {
-        console.error(`Error getting favorite stores: ${error}`);
-        self.sendSocketNotification("FAVORITE_STORES_RESULT", { error: error.message });
-      });
-  },
+    try {
+        if (cardAccounts && cardAccounts.Cards) {
+            const dataRows = [];
 
-  makeOffersRequest: function(options) {
-    const self = this;
-    axios(options)
-      .then(function(response) {
-        if (response.status === 200) {
-          const offers = response.data;
-          console.log("Got offers:", offers);
-          self.sendSocketNotification("OFFERS_RESULT", { offers: offers });
+            for (const card of cardAccounts.Cards) {
+                for (const account of card.Accounts) {
+                    const date = new Date().toISOString().split('T')[0];
+                    const saldo = account.Available;
+                    const dataRow = `${date},${parseInt(saldo, 10)}`; // Convert saldo to an integer
+                    dataRows.push(dataRow);
+                }
+            }
+
+            if (dataRows.length > 0) {
+                const dataToWrite = dataRows.join('\n') + '\n';
+                const filePath = '/home/PI/saldo_data.csv';
+
+                fs.appendFile(filePath, dataToWrite, (err) => {
+                    if (err) {
+                        console.error('Error writing to file in NodeHelper:', err);
+                    } else {
+                        console.log(`Saldo data exported to ${filePath} by NodeHelper`);
+                    }
+                });
+            } else {
+                console.error('No saldo data available to export in NodeHelper.');
+            }
         } else {
-          console.error(`Error getting offers: ${response.statusText}`);
-          self.sendSocketNotification("OFFERS_RESULT", { error: response.statusText });
+            console.error('Card accounts data not available in NodeHelper.');
         }
-      })
-      .catch(function(error) {
-        console.error(`Error getting offers: ${error}`);
-        self.sendSocketNotification("OFFERS_RESULT", { error: error.message });
-      });
-  }
+    } catch (error) {
+        console.error('Error in NodeHelper exportSaldoData:', error);
+    }
+}
+
 });
