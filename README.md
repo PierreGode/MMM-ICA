@@ -1,28 +1,28 @@
-#MMM-ICA is a [MagicMirror²](https://github.com/MagicMirrorOrg/MagicMirror) module for connecting to the Swedish grocery store ICA API.
+# MMM-ICA
 
-
+MMM-ICA is a [MagicMirror²](https://github.com/MagicMirrorOrg/MagicMirror) module for connecting to the Swedish grocery store ICA API.
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/J3J2EARPK)
 
+![saldo screenshot](screenshot.png)
 
+For Authentication you need to use basic authentication, information you can find here <https://github.com/svendahlstrand/ica-api>.
 
-![saldo](https://user-images.githubusercontent.com/8579922/223672603-f17baa02-02f9-424a-ab85-51cec0817792.png)
-
-
-For Authentication you need to use basic authentication, information you can find here https://github.com/svendahlstrand/ica-api
 ## Sample Configuration
 
-
-
 How to install:
-```
+
+```shell
 cd MagicMirror/modules
 ```
+
+```shell
+git clone https://github.com/PierreGode/MMM-ICA
 ```
-git clone https://github.com/PierreGode/MMM-ICA.git
-```
+
 In MagicMirror/config/config.js
-```
+
+```JavaScript
 {
   module: "MMM-ICA",
   position: "bottom_right",
@@ -46,18 +46,20 @@ In MagicMirror/config/config.js
   }
 },
 ```
-<p>
 
-API reference
-For more information on the ICA API, see the ica-api repository. https://github.com/svendahlstrand/ica-api 
+## API
+
+For more information on the ICA API, see the ica-api repository <https://github.com/svendahlstrand/ica-api>.
 
 Big thanks to svendahlstrand for the API source.
 
-The page for Magic Mirror. https://magicmirror.builders/
-
-You can find this module and many more in 3rd Party Modules on the Magic Mirror page
-https://github.com/MichMich/MagicMirror/wiki/3rd-party-modules
-<p>
 Api free: yes
-<p>
-development status: WIP 
+
+## Links
+
+- The page for MagicMirror². <https://magicmirror.builders/>
+- You can find this module and many more in 3rd Party Modules on the MagicMirror page: <https://github.com/MagicMirrorOrg/MagicMirror/wiki/3rd-party-modules>.
+
+## Development Status
+
+WIP
