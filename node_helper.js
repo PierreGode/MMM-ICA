@@ -28,26 +28,21 @@ runPredictionScript: function() {
     console.log("Exporting: Attempting to run python script");
 
     const scriptCommand = "python /home/PI/MagicMirror/modules/MMM-ICA/saldoprediction.py";
-    console.log(`Exporting: Running command: ${scriptCommand}`);
+    console.log(`Running command: ${scriptCommand}`);
 
-exec(scriptCommand, (error, stdout, stderr) => {
-    if (error) {
-        console.error(`Exporting: Error executing script: ${error.message}`);
-        return;
-    }
-    if (stderr) {
-        console.error(`Exporting: Stderr from script: ${stderr}`);
-    }
+    exec(scriptCommand, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Exporting: Error executing script: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            console.error(`Exporting: Stderr from script: ${stderr}`);
+            // Optional: You can still handle stdout even if there's stderr
+        }
 
-    console.log(`Exporting: Full Python script output: ${stdout}`);
-    const predictionMatch = stdout.match(/End of current month prediction: (\d+\.\d+)/);
-    if (predictionMatch && predictionMatch[1]) {
-        console.log(`Exporting: Extracted Prediction Result: ${predictionMatch[1]}`);
-        this.sendSocketNotification("PREDICTION_RESULT", predictionMatch[1]);
-    } else {
-        console.error("Exporting: Unable to find end-of-month prediction in script output");
-    }
-});
+        console.log(`Exporting: Python script output: ${stdout}`);
+        this.sendSocketNotification("PREDICTION_RESULT", stdout.trim());
+    });
 },
 
 
