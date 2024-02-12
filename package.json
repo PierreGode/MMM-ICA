@@ -1,7 +1,7 @@
 {
-    "name": "mmm-ICA",
+    "name": "mmm-ica",
     "version": "1.0.0",
-    "description": "A module for the MagicMirror² for tracking your information from ICA.",
+    "description": "A module for MagicMirror² for tracking your information from ICA.",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/PierreGode/MMM-ICA.git"
