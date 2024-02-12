@@ -83,12 +83,11 @@ Module.register("MMM-ICA", {
     return wrapper;
   },
 
-displayPredictedSaldo: function(wrapper) {
+  displayPredictedSaldo: function(wrapper) {
     const predictedSaldoDiv = document.createElement("div");
-    predictedSaldoDiv.innerHTML = `Gissad saldo den sista: ${this.config.predictedSaldo}`;
+    //predictedSaldoDiv.innerHTML = `Gissad saldo den sista: ${this.config.predictedSaldo}`;
     wrapper.appendChild(predictedSaldoDiv);
-},
-
+  },
 
   socketNotificationReceived: function(notification, payload) {
     console.log("Received socket notification:", notification, "with payload:", payload);
