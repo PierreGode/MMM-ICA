@@ -18,11 +18,11 @@ Module.register("MMM-ICA", {
   },
 
   start: function() {
-    console.log("Module config:", this.config);
+    console.log("ICA Module config:", this.config);
     Log.info(`Starting module: ${this.name}`);
 
     if (!this.config.username || !this.config.password) {
-      console.error("Error: username or password not provided in module config.");
+      console.error("ICA Error: username or password not provided in module config.");
       this.authTicket = "";
       this.updateDom();
       return;
@@ -85,7 +85,7 @@ Module.register("MMM-ICA", {
 
   displayPredictedSaldo: function(wrapper) {
     const predictedSaldoDiv = document.createElement("div");
-    //predictedSaldoDiv.innerHTML = `Gissad saldo den sista: ${this.config.predictedSaldo}`;
+    predictedSaldoDiv.innerHTML = `Gissad saldo den sista: ${this.config.predictedSaldo}`;
     wrapper.appendChild(predictedSaldoDiv);
   },
 
@@ -94,7 +94,7 @@ Module.register("MMM-ICA", {
 
     if (notification === "AUTH_TICKET_RESULT") {
       if (payload.error) {
-        console.error(`Error getting authentication ticket: ${payload.error}`);
+        console.error(`ICA Error getting authentication ticket: ${payload.error}`);
         this.authTicket = "";
         this.updateDom();
         setTimeout(() => {
@@ -105,7 +105,7 @@ Module.register("MMM-ICA", {
 
       const authTicket = payload.authenticationTicket;
       if (!authTicket) {
-        console.error("Error: Unable to retrieve authentication ticket.");
+        console.error("ICA Error: Unable to retrieve authentication ticket.");
         this.authTicket = "";
         this.updateDom();
         setTimeout(() => {
@@ -114,29 +114,29 @@ Module.register("MMM-ICA", {
         return;
       }
 
-      console.log(`Got authentication ticket: ${authTicket}`);
+      console.log(`ICA Got authentication ticket: ${authTicket}`);
       this.authTicket = authTicket;
       this.updateDom();
 
       this.getCardAccounts(); // Call to fetch card accounts
     } else if (notification === "CARD_ACCOUNTS_RESULT") {
       if (payload.error) {
-        console.error(`Error getting card accounts: ${payload.error}`);
+        console.error(`ICA Error getting card accounts: ${payload.error}`);
         this.updateDom();
         return;
       }
 
       const cardAccounts = payload.cardAccounts;
       if (!cardAccounts) {
-        console.error("Error: Unable to retrieve card accounts.");
+        console.error("ICA Error: Unable to retrieve card accounts.");
         this.updateDom();
         return;
       }
 
-      console.log("Got card accounts:", cardAccounts);
+      console.log("ICA Got card accounts:", cardAccounts);
       this.cardAccounts = cardAccounts;
       this.updateDom(1000);
-      console.error("Error:Exporting: Unable to retrieve card information.");
+      console.error("ICA Error:Exporting: Unable to retrieve card information.");
     } else if (notification === "PREDICTION_RESULT") {
       console.log(`Exporting: ${payload}`);
       this.config.predictedSaldo = payload; // Assuming payload is the predicted saldo
