@@ -5,7 +5,7 @@ const { exec } = require("child_process");
 
 module.exports = NodeHelper.create({
   start: function() {
-    console.log(`Starting helper: ${this.name}`);
+    console.log(`ICA Starting helper: ${this.name}`);
     this.runPredictionScript(); // Run the Python script at startup
     setInterval(() => {
       this.runPredictionScript(); // Schedule the script to run periodically
@@ -28,30 +28,30 @@ runPredictionScript: function() {
     console.log("Exporting: Attempting to run python script");
 
     const scriptCommand = "python /home/PI/MagicMirror/modules/MMM-ICA/saldoprediction.py";
-    console.log(`Running command: ${scriptCommand}`);
+    console.log(`ICA Running command: ${scriptCommand}`);
 
     exec(scriptCommand, (error, stdout, stderr) => {
         if (error) {
-            console.error(`Exporting: Error executing script: ${error.message}`);
+            console.error(`ICA Exporting: Error executing script: ${error.message}`);
             return;
         }
         if (stderr) {
-            console.error(`Exporting: Stderr from script: ${stderr}`);
+            console.error(`ICA Exporting: Stderr from script: ${stderr}`);
             // Optional: You can still handle stdout even if there's stderr
         }
 
-        console.log(`Exporting: Python script output: ${stdout}`);
+        console.log(`ICA Exporting: Python script output: ${stdout}`);
         this.sendSocketNotification("PREDICTION_RESULT", stdout.trim());
     });
 },
 
 
   socketNotificationReceived: function(notification, payload) {
-    console.log("Received socket notification:", notification, "with payload:", payload);
+    console.log("ICA Received socket notification:", notification, "with payload:", payload);
 
     if (notification === "GET_AUTH_TICKET") {
       this.config = payload;
-      console.log("Retrieving authentication ticket");
+      console.log("ICA Retrieving authentication ticket");
 
       const authHeader = `Basic ${Buffer.from(`${payload.username}:${payload.password}`).toString("base64")}`;
       const options = {
@@ -74,12 +74,12 @@ runPredictionScript: function() {
           const authTicket = response.headers["authenticationticket"];
           console.log(response.headers); // Add this line
           if (!authTicket) {
-            console.error("Error: Unable to retrieve authentication ticket.");
+            console.error("ICA Error: Unable to retrieve authentication ticket.");
             self.sendSocketNotification("AUTH_TICKET_RESULT", { error: "Unable to retrieve authentication ticket." });
             return;
           }
 
-          console.log(`Got authentication ticket: ${authTicket}`);
+          console.log(`ICA Got authentication ticket: ${authTicket}`);
           self.authTicket = authTicket;
 
           const cardAccountsOptions = {
@@ -92,12 +92,12 @@ runPredictionScript: function() {
 
           self.makeCardAccountsRequest(cardAccountsOptions);
         } else {
-          console.error(`Error getting authentication ticket: ${response.statusText}`);
+          console.error(`ICA Error getting authentication ticket: ${response.statusText}`);
           self.sendSocketNotification("AUTH_TICKET_RESULT", { error: response.statusText });
         }
       })
       .catch(function(error) {
-        console.error(`Error getting authentication ticket: ${error}`);
+        console.error(`ICA Error getting authentication ticket: ${error}`);
         self.sendSocketNotification("AUTH_TICKET_RESULT", { error: error.message });
       });
   },
@@ -108,22 +108,22 @@ runPredictionScript: function() {
       .then(function(response) {
         if (response.status === 200) {
           const cardAccounts = response.data;
-          console.log("Got card accounts:", cardAccounts);
+          console.log("ICA Got card accounts:", cardAccounts);
           self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { cardAccounts: cardAccounts });
           self.exportSaldoData(cardAccounts); // Call exportSaldoData here
         } else {
-          console.error(`Error getting card accounts: ${response.statusText}`);
+          console.error(`ICA Error getting card accounts: ${response.statusText}`);
           self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { error: response.statusText });
         }
       })
       .catch(function(error) {
-        console.error(`Error getting card accounts: ${error}`);
+        console.error(`ICA Error getting card accounts: ${error}`);
         self.sendSocketNotification("CARD_ACCOUNTS_RESULT", { error: error.message });
       });
   },
 
 exportSaldoData: function (cardAccounts) {
-    console.log("Exporting saldo data in NodeHelper...");
+    console.log("ICA Exporting saldo data in NodeHelper...");
 
     try {
         if (cardAccounts && cardAccounts.Cards) {
@@ -144,19 +144,19 @@ exportSaldoData: function (cardAccounts) {
 
                 fs.appendFile(filePath, dataToWrite, (err) => {
                     if (err) {
-                        console.error('Error writing to file in NodeHelper:', err);
+                        console.error('ICA Error writing to file in NodeHelper:', err);
                     } else {
-                        console.log(`Saldo data exported to ${filePath} by NodeHelper`);
+                        console.log(`ICA Saldo data exported to ${filePath} by NodeHelper`);
                     }
                 });
             } else {
-                console.error('No saldo data available to export in NodeHelper.');
+                console.error('ICA No saldo data available to export in NodeHelper.');
             }
         } else {
-            console.error('Card accounts data not available in NodeHelper.');
+            console.error('ICA Card accounts data not available in NodeHelper.');
         }
     } catch (error) {
-        console.error('Error in NodeHelper exportSaldoData:', error);
+        console.error('ICA Error in NodeHelper exportSaldoData:', error);
     }
 }
 
