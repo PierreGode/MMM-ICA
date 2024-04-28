@@ -3,7 +3,7 @@
 MMM-ICA is a [MagicMirror²](https://github.com/MagicMirrorOrg/MagicMirror) module for connecting to the Swedish grocery store ICA API.
 
 > [!WARNING]
-> **update 17 april 2024:** ICA made changes to their API. App not working
+> **update april 2024:** ICA made changes to their API. App not working
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/J3J2EARPK)
 
